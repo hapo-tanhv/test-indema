@@ -1,0 +1,157 @@
+﻿        <section id="view-report" class="view-section hidden">
+          <div class="report-layout">
+             <!-- Filter Bar (Time frame, Machine, Export) -->
+            <div class="report-filter-bar">
+              <div class="filter-segment-group">
+                <span class="filter-segment-title" data-i18n="report_timerange_lbl_lower">Khoảng thời gian</span>
+                <div class="segment-control" id="report-time-segments">
+                  <button class="segment-btn active" data-range="24h" data-i18n="report_btn_24h">24 GIỜ</button>
+                  <button class="segment-btn" data-range="7d" data-i18n="report_btn_7d">7 NGÀY</button>
+                  <button class="segment-btn" data-range="month" data-i18n="report_btn_month">THÁNG</button>
+                </div>
+              </div>
+
+              <div class="filter-select-group">
+                <span class="filter-select-title" data-i18n="report_machine_select_title">Chọn Máy</span>
+                <div class="custom-select-wrapper">
+                  <select id="report-machine-select">
+                    <option value="all" data-i18n="report_all_presses">Tất cả máy dập</option>
+                    <option value="01">Máy dập 01</option>
+                    <option value="02">Máy dập 02</option>
+                    <option value="03">Máy dập 03</option>
+                    <option value="04">Máy dập 04</option>
+                    <option value="05">Máy dập 05</option>
+                    <option value="06">Máy dập 06</option>
+                    <option value="07">Máy dập 07</option>
+                    <option value="08">Máy dập 08</option>
+                    <option value="09">Máy dập 09</option>
+                    <option value="10">Máy dập 10</option>
+                  </select>
+                </div>
+              </div>
+
+              <button class="export-btn font-bold" id="report-export-btn">
+                <svg class="export-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span data-i18n="report_btn_export_data">XUẤT DỮ LIỆU (CSV/PDF)</span>
+              </button>
+            </div>
+
+            <!-- KPI Row (3 Cards) -->
+            <div class="report-kpi-row">
+              <!-- KPI Card 1: Stroke count -->
+              <div class="r-kpi-card">
+                <div class="r-kpi-content">
+                  <span class="r-kpi-label" data-i18n="report_kpi_total_strokes">TỔNG SỐ LẦN DẬP (STROKE COUNT)</span>
+                  <span class="r-kpi-value" id="r-kpi-strokes">128.402</span>
+                  <span class="r-kpi-subtext text-running" id="r-kpi-strokes-trend">↑ +12.4% <span data-i18n="history_kpi_total_strokes_sub">so với hôm qua</span></span>
+                </div>
+                <div class="r-kpi-icon-wrapper">
+                  <svg class="r-kpi-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="16" width="18" height="5" rx="1"></rect>
+                    <path d="M12 3v13"></path>
+                    <path d="M7 8h10"></path>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- KPI Card 2: Uptime -->
+              <div class="r-kpi-card">
+                <div class="r-kpi-content" style="width: 100%;">
+                  <span class="r-kpi-label" data-i18n="report_kpi_uptime_label">THỜI GIAN HOẠT ĐỘNG (UPTIME)</span>
+                  <span class="r-kpi-value" id="r-kpi-uptime">22.4 <span class="unit" data-i18n="hour">giờ</span></span>
+                  <div class="r-kpi-progress-wrapper">
+                    <div class="r-kpi-progress-bar">
+                      <div class="r-kpi-progress-fill" id="r-kpi-uptime-progress" style="width: 93.3%"></div>
+                    </div>
+                    <span class="r-kpi-progress-desc" id="r-kpi-uptime-desc">Hiệu suất khả dụng: 93.3%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- KPI Card 3: Downtime -->
+              <div class="r-kpi-card">
+                <div class="r-kpi-content" style="width: 100%;">
+                  <span class="r-kpi-label" data-i18n="report_kpi_downtime_label">THỜI GIAN DỪNG (DOWNTIME)</span>
+                  <span class="r-kpi-value" id="r-kpi-downtime">1.6 <span class="unit" data-i18n="hour">giờ</span></span>
+                  <div class="r-kpi-downtime-split">
+                    <div class="downtime-col">
+                      <span class="col-lbl" data-i18n="report_kpi_maintenance">Bảo trì</span>
+                      <span class="col-val" id="r-kpi-dt-maintenance">45m</span>
+                    </div>
+                    <div class="downtime-divider"></div>
+                    <div class="downtime-col">
+                      <span class="col-lbl" data-i18n="report_kpi_incident">Sự cố</span>
+                      <span class="col-val" id="r-kpi-dt-incident">1h 15m</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Operational Charts Row -->
+            <div class="report-charts-row">
+              <!-- Operating Performance Chart -->
+              <div class="r-chart-panel">
+                <div class="r-chart-panel-header">
+                  <h3 class="r-chart-panel-title" data-i18n="report_chart_performance_title">Biểu Đồ Hiệu Suất Vận Hành</h3>
+                  <div class="r-chart-legend">
+                    <span class="legend-item"><span class="legend-dot prod"></span><span data-i18n="report_legend_production">Sản xuất</span></span>
+                    <span class="legend-item"><span class="legend-dot err"></span><span data-i18n="report_legend_errors">Lỗi kĩ thuật</span></span>
+                  </div>
+                </div>
+                <div class="r-chart-canvas-wrapper">
+                  <canvas id="operating-performance-chart"></canvas>
+                </div>
+              </div>
+
+              <!-- Error Distribution Doughnut -->
+              <div class="r-distribution-panel">
+                <h3 class="r-chart-panel-title" data-i18n="report_chart_error_dist">Phân Bổ Lỗi</h3>
+                <div class="r-pie-chart-wrapper">
+                  <div class="r-pie-canvas-container">
+                    <canvas id="error-distribution-chart"></canvas>
+                    <div class="r-pie-center-text">
+                      <span class="total-errors-val" id="r-total-errors-text">24</span>
+                      <span class="total-errors-lbl" data-i18n="report_chart_total_errors">Tổng lỗi</span>
+                    </div>
+                  </div>
+                  <div class="r-pie-legend" id="r-error-legend-container">
+                    <!-- Loaded dynamically via JS -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Operations Table Panel -->
+            <div class="report-table-panel">
+              <div class="r-table-header">
+                <h3 class="r-table-title" data-i18n="report_table_title">CHI TIẾT VẬN HÀNH THEO CA</h3>
+                <a href="javascript:void(0)" class="r-history-link" id="report-view-history-link" data-i18n="report_table_history_link">Xem lịch sử đầy đủ</a>
+              </div>
+              <div class="r-table-container">
+                <table class="report-table">
+                  <thead>
+                    <tr>
+                      <th data-i18n="report_tbl_col_shift_lbl">CA LÀM VIỆC</th>
+                      <th data-i18n="report_tbl_col_press_lbl">MÁY DẬP</th>
+                      <th data-i18n="history_tbl_col_strokes">STROKE COUNT</th>
+                      <th data-i18n="report_kpi_uptime">UPTIME</th>
+                      <th data-i18n="report_kpi_downtime">DOWNTIME</th>
+                      <th data-i18n="report_tbl_col_oee_lbl">HIỆU SUẤT (OEE)</th>
+                      <th data-i18n="history_tbl_col_status">TRẠNG THÁI</th>
+                    </tr>
+                  </thead>
+                  <tbody id="report-table-body">
+                    <!-- Dynamically rendered via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. VIEW CẢNH BÁO -->

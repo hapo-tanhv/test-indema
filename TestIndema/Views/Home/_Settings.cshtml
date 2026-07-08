@@ -1,0 +1,387 @@
+﻿        <section id="view-settings" class="view-section hidden">
+          <div class="settings-layout">
+            <!-- Left panel: Settings menu + Disk usage -->
+            <div class="settings-left-col">
+              <div class="settings-menu-panel">
+                <span class="menu-header-lbl" data-i18n="settings_category">DANH MỤC</span>
+                <div class="settings-menu-list">
+                  <a href="#" class="settings-menu-item active" data-sec="general">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="7" height="9"></rect>
+                      <rect x="14" y="3" width="7" height="5"></rect>
+                      <rect x="14" y="12" width="7" height="9"></rect>
+                      <rect x="3" y="16" width="7" height="5"></rect>
+                    </svg>
+                    <span data-i18n="settings_menu_general">Cấu Hình Chung</span>
+                  </a>
+                  <a href="#" class="settings-menu-item" data-sec="users">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span data-i18n="settings_menu_users">Quản Lý Người Dùng</span>
+                  </a>
+                  <a href="#" class="settings-menu-item" data-sec="machines">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                      <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    <span data-i18n="settings_menu_profiles">Hồ Sơ Máy</span>
+                  </a>
+                  <a href="#" class="settings-menu-item" data-sec="thresholds">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span data-i18n="settings_menu_thresholds">Ngưỡng Cảnh Báo</span>
+                  </a>
+                  <a href="#" class="settings-menu-item" data-sec="network">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    <span data-i18n="settings_menu_network">Kết Nối Mạng</span>
+                  </a>
+                </div>
+              </div>
+
+              <!-- Storage status panel -->
+              <div class="settings-storage-panel">
+                <span class="storage-header-lbl" data-i18n="settings_storage_lbl">TRẠNG THÁI LƯU TRỮ</span>
+                <div class="storage-value-row">
+                  <span class="storage-badge" data-i18n="settings_storage_ready">SẴN SÀNG</span>
+                  <span class="storage-pct">82%</span>
+                </div>
+                <div class="storage-progress-bar">
+                  <div class="bar-fill" style="width: 82%;"></div>
+                </div>
+                <span class="storage-subtext" data-i18n="settings_storage_db">Cơ sở dữ liệu: 1.2TB / 1.5TB</span>
+              </div>
+            </div>
+
+            <!-- Right panel: actual forms grouped -->
+            <div class="settings-right-col">
+              <!-- Sub-header inside view -->
+              <div class="settings-inner-header">
+                <div class="header-titles">
+                  <h2 class="settings-title-h2" data-i18n="settings_header_title">Cài Đặt Hệ Thống</h2>
+                  <p class="settings-subtitle-p" data-i18n="settings_header_subtitle">Quản lý hiệu suất, thời gian vận hành và các ngưỡng cảnh báo cho dây chuyền sản xuất HP-01.</p>
+                </div>
+                <div class="settings-header-actions">
+                  <button class="settings-btn btn-secondary" id="settings-btn-cancel" data-i18n="settings_btn_cancel">Hủy Thay Đổi</button>
+                  <button class="settings-btn btn-primary" id="settings-btn-save" data-i18n="settings_btn_save">Lưu Cấu Hình</button>
+                </div>
+              </div>
+
+              <!-- Panel 1: General configuration -->
+              <div class="settings-form-panel" id="sec-general">
+                <div class="panel-header">
+                  <div class="title-with-icon">
+                    <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="7" height="9"></rect>
+                      <rect x="14" y="3" width="7" height="5"></rect>
+                      <rect x="14" y="12" width="7" height="9"></rect>
+                      <rect x="3" y="16" width="7" height="5"></rect>
+                    </svg>
+                    <h3 data-i18n="settings_panel_general">Cấu Hình Chung</h3>
+                  </div>
+                  <span class="system-id-lbl">ID Hệ Thống: HP-01-VN-2024</span>
+                </div>
+                
+                <div class="panel-grid-2">
+                  <div class="form-group">
+                    <label data-i18n="settings_sys_name">TÊN HỆ THỐNG</label>
+                    <input type="text" id="settings-sys-name" value="Dây chuyền sản xuất HP-01">
+                  </div>
+                  <div class="form-group">
+                    <label data-i18n="settings_op_area">KHU VỰC VẬN HÀNH</label>
+                    <div class="custom-select-wrapper">
+                      <select id="settings-op-area">
+                        <option value="area1">Nhà máy A - Khu vực 01</option>
+                        <option value="area2" selected>Nhà máy A - Khu vực 02</option>
+                        <option value="area3">Nhà máy B - Khu vực 01</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel-grid-2" style="margin-top: 20px;">
+                  <div class="form-group">
+                    <label data-i18n="settings_lang">NGÔN NGỮ GIAO DIỆN</label>
+                    <div class="language-selector-buttons">
+                      <button class="lang-btn active" id="lang-btn-vi" data-lang="vi">
+                        <span class="flag-icon">🇻🇳</span> Tiếng Việt
+                      </button>
+                      <button class="lang-btn" id="lang-btn-en" data-lang="en">
+                        <span class="flag-icon">🇺🇸</span> English (US)
+                      </button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label data-i18n="settings_timezone">MÚI GIỜ HỆ THỐNG</label>
+                    <div class="timezone-input-wrapper">
+                      <input type="text" value="(UTC+07:00) Bangkok, Hanoi, Jakarta" disabled>
+                      <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Panel 2: Machine profiles -->
+              <div class="settings-form-panel" id="sec-machines">
+                <div class="panel-header">
+                  <div class="title-with-icon">
+                    <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                      <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    <h3 data-i18n="settings_panel_profiles">Hồ Sơ Máy & Chỉ Số Đo Lường</h3>
+                  </div>
+                </div>
+
+                <div class="metrics-sliders-grid">
+                  <div class="metric-slider-box">
+                    <div class="slider-header">
+                      <span class="lbl" data-i18n="metric_strokes">SỐ LẦN DẬP</span>
+                      <span class="val">120 SPM</span>
+                    </div>
+                    <div class="slider-wrapper">
+                      <input type="range" class="target-slider" min="60" max="180" value="120" disabled>
+                    </div>
+                    <div class="slider-footer">
+                      <span data-i18n="metric_strokes_std">Chuẩn</span>
+                      <span>120 SPM</span>
+                    </div>
+                  </div>
+
+                  <div class="metric-slider-box">
+                    <div class="slider-header">
+                      <span class="lbl" data-i18n="metric_uptime">THỜI GIAN CHẠY</span>
+                      <span class="val color-green">95.0%</span>
+                    </div>
+                    <div class="slider-wrapper">
+                      <input type="range" class="target-slider green-fill" min="80" max="100" value="95" disabled>
+                    </div>
+                    <div class="slider-footer">
+                      <span data-i18n="metric_uptime_min">Tối thiểu</span>
+                      <span>95.0%</span>
+                    </div>
+                  </div>
+
+                  <div class="metric-slider-box">
+                    <div class="slider-header">
+                      <span class="lbl" data-i18n="metric_downtime">THỜI GIAN DỪNG</span>
+                      <span class="val color-orange">30 Phút</span>
+                    </div>
+                    <div class="slider-wrapper">
+                      <input type="range" class="target-slider orange-fill" min="10" max="60" value="30" disabled>
+                    </div>
+                    <div class="slider-footer">
+                      <span data-i18n="metric_downtime_max">Tối đa</span>
+                      <span>30 Phút</span>
+                    </div>
+                  </div>
+
+                  <div class="metric-slider-box">
+                    <div class="slider-header">
+                      <span class="lbl" data-i18n="metric_efficiency">HIỆU SUẤT</span>
+                      <span class="val color-blue">92%</span>
+                    </div>
+                    <div class="slider-wrapper">
+                      <input type="range" class="target-slider blue-fill" min="80" max="100" value="92" disabled>
+                    </div>
+                    <div class="slider-footer">
+                      <span data-i18n="metric_efficiency_target">Mục tiêu</span>
+                      <span>92%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel-sub-header">
+                  <span data-i18n="settings_registered_specs">THÔNG SỐ KỸ THUẬT ĐÃ ĐĂNG KÝ</span>
+                </div>
+
+                <table class="settings-spec-table">
+                  <thead>
+                    <tr>
+                      <th data-i18n="settings_col_mac">MÃ MÁY</th>
+                      <th data-i18n="settings_col_strokes">SỐ LẦN DẬP TB (SPM)</th>
+                      <th data-i18n="settings_col_uptime">TỈ LỆ UPTIME</th>
+                      <th data-i18n="settings_col_status">TRẠNG THÁI</th>
+                      <th style="text-align: right;" data-i18n="settings_col_act">HÀNH ĐỘNG</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-bold">HP-PRESS-01</td>
+                      <td>118 SPM</td>
+                      <td>98.5%</td>
+                      <td>
+                        <span class="status-indicator-dot running"><span data-i18n="status_running">Hoạt động</span></span>
+                      </td>
+                      <td style="text-align: right;">
+                        <a href="#" class="edit-spec-link" data-i18n="settings_edit_link">Hiệu chỉnh</a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="font-bold">HP-PRESS-02</td>
+                      <td>121 SPM</td>
+                      <td>97.2%</td>
+                      <td>
+                        <span class="status-indicator-dot running"><span data-i18n="status_running">Hoạt động</span></span>
+                      </td>
+                      <td style="text-align: right;">
+                        <a href="#" class="edit-spec-link" data-i18n="settings_edit_link">Hiệu chỉnh</a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Panel 3: Warnings configuration -->
+              <div class="settings-form-panel" id="sec-thresholds">
+                <div class="panel-header">
+                  <div class="title-with-icon">
+                    <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <h3 data-i18n="settings_panel_thresholds">Ngưỡng Cảnh Báo Hệ Thống</h3>
+                  </div>
+                  <span class="warning-active-badge" data-i18n="settings_alerts_active">2 CẢNH BÁO ĐANG BẬT</span>
+                </div>
+
+                <div class="thresholds-toggles-grid">
+                  <!-- Toggle Card 1: Downtime -->
+                  <div class="threshold-toggle-card">
+                    <div class="card-top-row">
+                      <div class="text-info">
+                        <h4 data-i18n="alert_downtime_title">Cảnh báo Thời gian dừng</h4>
+                        <p data-i18n="alert_downtime_desc">Kích hoạt khi máy dừng quá lâu</p>
+                      </div>
+                      <label class="switch-toggle">
+                        <input type="checkbox" id="settings-downtime-enabled" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+                    <div class="card-inputs-row">
+                      <div class="input-field-box">
+                        <span class="lbl" data-i18n="alert_downtime_warning">Ngưỡng Cảnh báo (Phút)</span>
+                        <input type="number" id="settings-downtime-warning" value="15">
+                      </div>
+                      <div class="input-field-box">
+                        <span class="lbl" data-i18n="alert_downtime_emergency">Ngưỡng Khẩn cấp (Phút)</span>
+                        <input type="number" id="settings-downtime-emergency" value="30">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Toggle Card 2: Low Efficiency -->
+                  <div class="threshold-toggle-card">
+                    <div class="card-top-row">
+                      <div class="text-info">
+                        <h4 data-i18n="alert_efficiency_title">Cảnh báo Hiệu suất thấp</h4>
+                        <p data-i18n="alert_efficiency_desc">Duy trì hiệu suất vận hành chuẩn</p>
+                      </div>
+                      <label class="switch-toggle">
+                        <input type="checkbox" id="settings-efficiency-enabled" checked>
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+                    <div class="card-inputs-row">
+                      <div class="input-field-box">
+                        <span class="lbl" data-i18n="alert_efficiency_warning">Ngưỡng Cảnh báo (%)</span>
+                        <input type="number" id="settings-efficiency-warning" value="85">
+                      </div>
+                      <div class="input-field-box">
+                        <span class="lbl" data-i18n="alert_efficiency_delay">Trễ ghi nhận (Giây)</span>
+                        <input type="number" id="settings-efficiency-delay" value="60">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Handing optimal suggestion card -->
+                <div class="operation-tip-card">
+                  <div class="tip-icon-wrapper">
+                    <svg class="tip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9 18h6"></path>
+                      <path d="M10 22h4"></path>
+                      <path d="M15.09 14c.18-.33.3-.68.37-1.04.18-1 .12-2-.19-3a4 4 0 0 0-2.27-2.58A4 4 0 0 0 8 10v1.5a3.5 3.5 0 0 0 .7 2.1l1.3 1.6V18h4v-2.4l1.09-1.6z"></path>
+                    </svg>
+                  </div>
+                  <div class="tip-text">
+                    <h5 data-i18n="tip_title">Mẹo tối ưu vận hành</h5>
+                    <p data-i18n="tip_content">Việc duy trì Số lần dập (Stroke Count) ở mức 115~120 SPM sẽ tối ưu hóa tuổi thọ của khuôn dập lên thêm 15%. Hệ thống sẽ tự động gửi báo cáo nếu hiệu suất giảm xuống dưới ngưỡng 85% trong 10 phút.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Panel 4: User access lists -->
+              <div class="settings-form-panel" id="sec-users">
+                <div class="panel-header">
+                  <div class="title-with-icon">
+                    <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4-4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <h3 data-i18n="settings_panel_users">Người Dùng Có Quyền Truy Cập</h3>
+                  </div>
+                  <button class="add-user-btn" id="settings-btn-add-user">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="8.5" cy="7" r="4"></circle>
+                      <line x1="20" y1="8" x2="20" y2="14"></line>
+                      <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                    <span data-i18n="btn_add_user">+ Thêm Người Dùng</span>
+                  </button>
+                </div>
+
+                <div class="users-cards-grid" id="settings-users-grid">
+                  <!-- Dynamically populated via JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Floating UI Components: Toast Notification and Add User Modal -->
+        <div class="toast-container" id="toast-container"></div>
+
+        <div class="alarm-modal-overlay hidden" id="add-user-modal">
+          <div class="alarm-modal-card">
+            <div class="alarm-modal-header">
+              <h3 class="alarm-modal-title" data-i18n="add_user_title">Thêm Người Dùng Mới</h3>
+              <button class="alarm-modal-close" id="add-user-close-btn">&times;</button>
+            </div>
+            <div class="alarm-modal-body">
+              <div class="modal-detail-row">
+                <span class="detail-label" data-i18n="add_user_name_lbl">Họ và Tên</span>
+                <input type="text" id="add-user-name-input" placeholder="Ví dụ: Lê Văn Nam..." style="width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; color: white; outline: none; margin-top: 4px;">
+              </div>
+              <div class="modal-detail-row">
+                <span class="detail-label" data-i18n="add_user_role_lbl">Vai Trò / Quyền Hạn</span>
+                <div class="custom-select-wrapper" style="margin-top: 4px; width: 100%;">
+                  <select id="add-user-role-select" style="width: 100%;">
+                    <option value="Manager">Quản lý kỹ thuật (Manager)</option>
+                    <option value="Operator" selected>Vận hành viên (Operator)</option>
+                    <option value="Admin">Quản trị viên (Administrator)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="alarm-modal-footer">
+              <button class="alarm-modal-btn btn-ack" id="add-user-btn-cancel" data-i18n="btn_cancel" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);">Hủy bỏ</button>
+              <button class="alarm-modal-btn btn-resolve" id="add-user-btn-submit" data-i18n="btn_confirm">Xác nhận</button>
+            </div>
+          </div>
+        </div>
