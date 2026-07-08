@@ -119,7 +119,7 @@ function renderOverviewGrid() {
           <div class="machine-card-metrics-list">
             <div class="metric-item">
               <div class="metric-header">
-                <span class="metric-lbl"><span class="metric-num num-1">①</span> <span class="metric-val">${m.strokes} / ${m.dailyTarget}</span></span>
+                <span class="metric-lbl"><span class="metric-num num-1">1</span> <span class="metric-val">${m.strokes} / ${m.dailyTarget}</span></span>
                 <span class="metric-pct">${effPct}</span>
               </div>
               <div class="metric-progress-bg">
@@ -129,7 +129,7 @@ function renderOverviewGrid() {
             
             <div class="metric-item">
               <div class="metric-header">
-                <span class="metric-lbl"><span class="metric-num num-2">②</span> <span class="metric-val">${m.strokes} / ${m.totalOrder}</span></span>
+                <span class="metric-lbl"><span class="metric-num num-2">2</span> <span class="metric-val">${m.strokes} / ${m.totalOrder}</span></span>
                 <span class="metric-pct">${orderPct}</span>
               </div>
               <div class="metric-progress-bg">
@@ -139,7 +139,7 @@ function renderOverviewGrid() {
             
             <div class="metric-item">
               <div class="metric-header">
-                <span class="metric-lbl"><span class="metric-num num-3">③</span> <span class="metric-val">${effPct}</span></span>
+                <span class="metric-lbl"><span class="metric-num num-3">3</span> <span class="metric-val">${effPct}</span></span>
                 <span class="metric-desc">${lang === 'vi' ? '= Thực tế / Kế hoạch' : '= Act / Plan'}</span>
               </div>
               <div class="metric-progress-bg">
@@ -149,7 +149,7 @@ function renderOverviewGrid() {
             
             <div class="metric-item">
               <div class="metric-header">
-                <span class="metric-lbl"><span class="metric-num num-4">④</span> <span class="metric-val">${m.timeEfficiency}</span></span>
+                <span class="metric-lbl"><span class="metric-num num-4">4</span> <span class="metric-val">${m.timeEfficiency}</span></span>
                 <span class="metric-desc">${lang === 'vi' ? '= Thời gian chạy / Thời gian ca' : '= Run / Shift'}</span>
               </div>
               <div class="metric-progress-bg">
@@ -159,7 +159,7 @@ function renderOverviewGrid() {
 
             <div class="metric-item">
               <div class="metric-header">
-                <span class="metric-lbl"><span class="metric-num num-5">⑤</span> <span class="metric-val">${m.stoptime}</span></span>
+                <span class="metric-lbl"><span class="metric-num num-5">5</span> <span class="metric-val">${m.stoptime}</span></span>
                 <span class="metric-desc">${lang === 'vi' ? '= Thời gian chạy thử máy' : '= Trial run time'}</span>
               </div>
               <div class="metric-progress-bg">
@@ -169,7 +169,7 @@ function renderOverviewGrid() {
 
             <div class="metric-item">
               <div class="metric-header">
-                <span class="metric-lbl"><span class="metric-num num-6">⑥</span> <span class="metric-val">${m.runtime}</span></span>
+                <span class="metric-lbl"><span class="metric-num num-6">6</span> <span class="metric-val">${m.runtime}</span></span>
                 <span class="metric-desc">${lang === 'vi' ? '= Thời gian chạy máy' : '= Production run time'}</span>
               </div>
               <div class="metric-progress-bg">

@@ -69,4 +69,15 @@ function initNavigation() {
       }
     });
   });
+
+  // Gắn sự kiện click chuông thông báo ở header dẫn đến tab cảnh báo
+  const notifyWidget = document.querySelector('.notify-widget');
+  if (notifyWidget) {
+    notifyWidget.addEventListener('click', () => {
+      const alertTab = document.querySelector('.nav-item[data-tab="alert"]');
+      if (alertTab) {
+        alertTab.click();
+      }
+    });
+  }
 }

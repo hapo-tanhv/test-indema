@@ -203,13 +203,14 @@ function renderReportView() {
           data: errorDataValues,
           backgroundColor: errorDataColors,
           borderWidth: 0,
+          borderRadius: 0,
           hoverOffset: 4
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '75%',
+        cutout: '85%',
         plugins: {
           legend: {
             display: false

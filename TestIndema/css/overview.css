@@ -543,7 +543,7 @@
 }
 
 .gauge-fill-custom {
-  stroke-linecap: round;
+  stroke-linecap: butt;
 }
 
 .gauge-center-text-custom {
@@ -874,6 +874,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
+  font-size: 0.75rem;
 }
 
 .machine-card-status .status-indicator-dot {
@@ -953,19 +954,27 @@
 }
 
 .metric-num {
-  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 0.6rem;
   font-weight: 700;
-  margin-right: 4px;
-  display: inline-block;
+  margin-right: 6px;
+  border: 1.2px solid currentColor;
   vertical-align: middle;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
-.metric-num.num-1 { color: #00d2ff; }
-.metric-num.num-2 { color: #3d85c6; }
-.metric-num.num-3 { color: #00e676; }
-.metric-num.num-4 { color: #ffeb3b; }
-.metric-num.num-5 { color: #ff9100; }
-.metric-num.num-6 { color: #ff3d00; }
+.metric-num.num-1 { color: #00d2ff; background-color: rgba(0, 210, 255, 0.08); border-color: rgba(0, 210, 255, 0.25); }
+.metric-num.num-2 { color: #3d85c6; background-color: rgba(61, 133, 198, 0.08); border-color: rgba(61, 133, 198, 0.25); }
+.metric-num.num-3 { color: #00e676; background-color: rgba(0, 230, 118, 0.08); border-color: rgba(0, 230, 118, 0.25); }
+.metric-num.num-4 { color: #ffeb3b; background-color: rgba(255, 235, 59, 0.08); border-color: rgba(255, 235, 59, 0.25); }
+.metric-num.num-5 { color: #ff9100; background-color: rgba(255, 145, 0, 0.08); border-color: rgba(255, 145, 0, 0.25); }
+.metric-num.num-6 { color: #ff3d00; background-color: rgba(255, 61, 0, 0.08); border-color: rgba(255, 61, 0, 0.25); }
 
 .metric-val-group {
   display: flex;
