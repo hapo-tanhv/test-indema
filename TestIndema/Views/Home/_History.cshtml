@@ -1,4 +1,4 @@
-﻿        <section id="view-history" class="view-section hidden">
+        <section id="view-history" class="view-section hidden">
           <div class="history-layout">
             <!-- Row 1: 4 KPI Cards -->
             <div class="history-kpi-row">
@@ -17,40 +17,34 @@
 
               <!-- KPI Card 2 -->
               <div class="h-kpi-card accent-grey">
-                <span class="h-kpi-label" data-i18n="history_kpi_uptime">TRUNG BÌNH TUẦN</span>
+                <span class="h-kpi-label" data-i18n="history_kpi_uptime">TỔNG SẢN LƯỢNG TUẦN</span>
                 <span class="h-kpi-value">84.210 <span class="unit" data-i18n="overview_strokes_unit">Lần</span></span>
-                <div class="h-kpi-trend trend-stable">
-                  <svg class="trend-stable-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                <div class="h-kpi-trend trend-up">
+                  <svg class="trend-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="7" y1="17" x2="17" y2="7"></line>
+                    <polyline points="7 7 17 7 17 17"></polyline>
                   </svg>
-                  <span data-i18n="history_kpi_uptime_sub">Ổn định ở mức 92%</span>
+                  <span>+4.5% <span data-i18n="history_kpi_uptime_sub">so với tuần trước</span></span>
                 </div>
               </div>
 
               <!-- KPI Card 3 -->
-              <div class="h-kpi-card accent-green">
-                <span class="h-kpi-label" data-i18n="history_kpi_downtime">TỶ LỆ ĐẠT CHUẨN</span>
-                <span class="h-kpi-value">98.4%</span>
-                <div class="h-kpi-trend trend-green">
-                  <svg class="trend-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
+              <div class="h-kpi-card accent-blue">
+                <span class="h-kpi-label" data-i18n="history_kpi_monthly_strokes">TỔNG SẢN LƯỢNG THÁNG</span>
+                <span class="h-kpi-value">340.500 <span class="unit" data-i18n="overview_strokes_unit">Lần</span></span>
+                <div class="h-kpi-trend trend-up">
+                  <svg class="trend-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="7" y1="17" x2="17" y2="7"></line>
+                    <polyline points="7 7 17 7 17 17"></polyline>
                   </svg>
-                  <span data-i18n="history_kpi_downtime_sub">Vượt mục tiêu 1.4%</span>
+                  <span>+12.4% <span data-i18n="history_kpi_monthly_strokes_sub">so với tháng trước</span></span>
                 </div>
               </div>
 
               <!-- KPI Card 4 -->
-              <div class="h-kpi-card accent-red">
-                <span class="h-kpi-label" data-i18n="history_kpi_stability">MÁY ĐANG DỪNG</span>
-                <span class="h-kpi-value">03 <span class="unit" data-i18n="overview_machines_unit">/ 10</span></span>
-                <div class="h-kpi-trend trend-alert">
-                  <svg class="trend-alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                    <line x1="12" y1="9" x2="12" y2="13"></line>
-                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                  </svg>
-                  <span data-i18n="history_kpi_stability_sub">Cần bảo trì định kỳ</span>
-                </div>
+              <div class="h-kpi-card accent-green" style="display: flex; flex-direction: column; justify-content: center; height: 100%;">
+                <span class="h-kpi-label" data-i18n="history_kpi_downtime">HIỆU SUẤT</span>
+                <span class="h-kpi-value" style="margin-top: 8px;">98.4%</span>
               </div>
             </div>
 
@@ -105,7 +99,7 @@
                     </label>
                     <label class="filter-checkbox-label">
                       <input type="radio" name="filter-status" value="stopped">
-                      <span data-i18n="history_filter_status_stopped">Dừng khẩn cấp</span>
+                      <span data-i18n="history_filter_status_stopped">Không hoàn thành</span>
                     </label>
                   </div>
                   <div class="filter-group" style="margin-top: 10px;">
@@ -116,11 +110,11 @@
                     </label>
                     <label class="filter-checkbox-label">
                       <input type="radio" name="filter-quality" value="high">
-                      <span data-i18n="history_filter_quality_high">Đạt chuẩn (>= 95%)</span>
+                      <span data-i18n="history_filter_quality_high">Đạt chuẩn (100%)</span>
                     </label>
                     <label class="filter-checkbox-label">
                       <input type="radio" name="filter-quality" value="low">
-                      <span data-i18n="history_filter_quality_low">Cần cải thiện (< 95%)</span>
+                      <span data-i18n="history_filter_quality_low">Không đạt (< 100%)</span>
                     </label>
                   </div>
                   <div class="filter-actions">
@@ -148,10 +142,11 @@
                     <th data-i18n="history_tbl_col_machine">MÃ MÁY</th>
                     <th data-i18n="history_tbl_col_start">THỜI GIAN BẮT ĐẦU</th>
                     <th data-i18n="history_tbl_col_end">THỜI GIAN KẾT THÚC</th>
-                    <th data-i18n="history_tbl_col_strokes">TỔNG SỐ LẦN DẬP</th>
-                    <th data-i18n="history_tbl_col_quality">TỶ LỆ CHẤT LƯỢNG</th>
-                    <th data-i18n="history_tbl_col_status">TRẠNG THÁI</th>
-                    <th data-i18n="history_tbl_col_act">THAO TÁC</th>
+                    <th data-i18n="history_tbl_col_strokes" style="text-align: center;">SẢN LƯỢNG THỰC TẾ</th>
+                    <th data-i18n="history_tbl_col_target" style="text-align: center;">SẢN LƯỢNG TIÊU CHUẨN</th>
+                    <th data-i18n="history_tbl_col_efficiency">HIỆU SUẤT</th>
+                    <th data-i18n="history_tbl_col_status" style="text-align: center;">TRẠNG THÁI</th>
+                    <th data-i18n="history_tbl_col_details" style="text-align: center;">CHI TIẾT</th>
                   </tr>
                 </thead>
                 <tbody id="history-table-body">
@@ -166,52 +161,7 @@
               </div>
             </div>
 
-            <!-- Bottom Row: Performance Chart & Stability Gauge -->
-            <div class="history-bottom-row">
-              <!-- Weekly Performance Panel -->
-              <div class="chart-panel">
-                <div class="chart-panel-header">
-                  <h3 class="chart-panel-title" data-i18n="history_chart_performance_title">Phân Tích Hiệu Suất Tuần</h3>
-                  <p class="chart-panel-subtitle" data-i18n="history_chart_performance_desc">So sánh sản lượng mục tiêu vs thực tế</p>
-                  <div class="chart-legend">
-                    <span class="legend-item"><span class="legend-dot actual"></span><span data-i18n="history_legend_actual">Thực tế</span></span>
-                    <span class="legend-item"><span class="legend-dot target"></span><span data-i18n="history_legend_target">Mục tiêu</span></span>
-                  </div>
-                </div>
-                <div class="chart-canvas-wrapper">
-                  <canvas id="weekly-performance-chart"></canvas>
-                </div>
-              </div>
 
-              <!-- System Stability Panel -->
-              <div class="stability-panel">
-                <h3 class="stability-title" data-i18n="history_chart_stability_title">CHỈ SỐ ỔN ĐỊNH HỆ THỐNG</h3>
-                <div class="stability-gauge-container">
-                  <svg class="stability-gauge-svg" viewBox="0 0 200 200">
-                    <defs>
-                      <linearGradient id="stability-grad" x1="0%" y1="100%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color="#0055ff" />
-                        <stop offset="100%" stop-color="#00d2ff" />
-                      </linearGradient>
-                      <filter id="stability-glow" x="-20%" y="-20%" width="140%" height="140%">
-                        <feGaussianBlur stdDeviation="5" result="blur" />
-                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                      </filter>
-                    </defs>
-                    <circle cx="100" cy="100" r="70" stroke="#16223f" stroke-width="12" fill="none" />
-                    <!-- Circle display representing 92%. Length of circle is 2 * PI * r = 2 * 3.14159 * 70 = 440 -->
-                    <circle cx="100" cy="100" r="70" stroke="url(#stability-grad)" stroke-width="12" fill="none"
-                            stroke-dasharray="440" stroke-dashoffset="35.2" stroke-linecap="round"
-                            transform="rotate(-90 100 100)" filter="url(#stability-glow)" />
-                  </svg>
-                  <div class="stability-center-text">
-                    <span class="stability-value">92%</span>
-                    <span class="stability-label">Optimized</span>
-                  </div>
-                </div>
-                <p class="stability-footer-text" data-i18n="history_stability_footer">Hệ thống đang hoạt động trong ngưỡng an toàn cho phép.</p>
-              </div>
-            </div>
           </div>
         </section>
 

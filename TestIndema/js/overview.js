@@ -1,60 +1,48 @@
 function updateActiveMachineDetails(machineId) {
-  const machine = machinesData[machineId];
-  if (!machine) return;
+  // Biểu đồ 'SẢN LƯỢNG THỰC TẾ THEO THỜI GIAN' luôn tính tổng số lần dập của cả 10 máy dập cộng lại
+  renderTotalTrendChart();
+}
 
-  // Cập nhật tên và số lượng dập
-  const nameEl = document.getElementById('selected-machine-name');
-  const strokesEl = document.getElementById('selected-machine-strokes');
-  
-  if (nameEl) {
-    nameEl.textContent = state.language === 'vi' ? `Máy số ${machineId}` : `Press #${machineId}`;
-  }
-  if (strokesEl) {
-    const unitText = translations[state.language].overview_strokes_unit;
-    strokesEl.innerHTML = `${machine.strokes} <span class="unit">${unitText}</span>`;
-  }
+function getTotalValueY(value) {
+  const maxY = 20;
+  const minY = 110;
+  const maxValue = 11000;
+  const safeVal = Math.min(Math.max(value, 0), maxValue);
+  return minY - (safeVal / maxValue) * (minY - maxY);
+}
 
-  // Cập nhật trạng thái chạy/dừng và LED
-  const dotEl = document.getElementById('selected-machine-dot');
-  const statusEl = document.getElementById('selected-machine-status');
-  
-  if (dotEl && statusEl) {
-    if (machine.status === 'running') {
-      dotEl.className = 'status-indicator-dot running';
-      statusEl.className = 'status-text text-running';
-      statusEl.textContent = translations[state.language].active_machine_running;
-    } else {
-      dotEl.className = 'status-indicator-dot stopped';
-      statusEl.className = 'status-text text-stopped';
-      statusEl.textContent = translations[state.language].active_machine_stopped;
-    }
-  }
-
-  // Cập nhật đường cong biểu đồ xu hướng SVG
+function renderTotalTrendChart() {
   const fillPath = document.getElementById('chart-fill-path');
   const trendPath = document.getElementById('chart-trend-path');
   const dots = document.querySelectorAll('.trend-chart-svg circle');
 
-  if (machine.trend && machine.trend.length === 4) {
-    const y0 = getValueY(machine.trend[0]);
-    const y1 = getValueY(machine.trend[1]);
-    const y2 = getValueY(machine.trend[2]);
-    const y3 = getValueY(machine.trend[3]);
-
-    // Tạo chuỗi path Cubic Bezier mượt mà nối 4 điểm
-    const pathD = `M 40,${y0} C 75,${y0} 75,${y1} 110,${y1} C 145,${y1} 145,${y2} 180,${y2} C 215,${y2} 215,${y3} 250,${y3}`;
-    const fillD = `${pathD} L 250,90 L 40,90 Z`;
-
-    if (trendPath) trendPath.setAttribute('d', pathD);
-    if (fillPath) fillPath.setAttribute('d', fillD);
-
-    // Cập nhật toạ độ Y của 4 nút chấm tròn dữ liệu
-    if (dots.length === 4) {
-      dots[0].setAttribute('cy', y0.toString());
-      dots[1].setAttribute('cy', y1.toString());
-      dots[2].setAttribute('cy', y2.toString());
-      dots[3].setAttribute('cy', y3.toString());
+  let totalTrend = [0, 0, 0, 0];
+  Object.keys(machinesData).forEach(id => {
+    const m = machinesData[id];
+    if (m.trend && m.trend.length === 4) {
+      totalTrend[0] += m.trend[0];
+      totalTrend[1] += m.trend[1];
+      totalTrend[2] += m.trend[2];
+      totalTrend[3] += m.trend[3];
     }
+  });
+
+  const y0 = getTotalValueY(totalTrend[0]);
+  const y1 = getTotalValueY(totalTrend[1]);
+  const y2 = getTotalValueY(totalTrend[2]);
+  const y3 = getTotalValueY(totalTrend[3]);
+
+  const pathD = `M 40,${y0} C 75,${y0} 75,${y1} 110,${y1} C 145,${y1} 145,${y2} 180,${y2} C 215,${y2} 215,${y3} 250,${y3}`;
+  const fillD = `${pathD} L 250,90 L 40,90 Z`;
+
+  if (trendPath) trendPath.setAttribute('d', pathD);
+  if (fillPath) fillPath.setAttribute('d', fillD);
+
+  if (dots.length === 4) {
+    dots[0].setAttribute('cy', y0.toString());
+    dots[1].setAttribute('cy', y1.toString());
+    dots[2].setAttribute('cy', y2.toString());
+    dots[3].setAttribute('cy', y3.toString());
   }
 }
 
@@ -68,7 +56,7 @@ function renderOverviewGrid() {
 
   Object.keys(machinesData).sort((a, b) => parseInt(a, 10) - parseInt(b, 10)).forEach(id => {
     const m = machinesData[id];
-    const isSelected = (id === state.selectedMachineId) ? 'selected' : '';
+    const isSelected = '';
     const statusClass = m.status === 'running' ? 'running' : 'stopped';
     const textClass = m.status === 'running' ? 'text-running' : 'text-stopped';
     const statusText = m.status === 'running' 
@@ -119,7 +107,7 @@ function renderOverviewGrid() {
           <div class="machine-card-metrics-list">
             <div class="metric-item">
               <div class="metric-header">
-                <span class="metric-lbl"><span class="metric-num num-1">1</span> <span class="metric-val">${m.strokes} / ${m.dailyTarget}</span></span>
+                <span class="metric-lbl"><span class="metric-num num-1">1</span> <span class="metric-val">${m.strokes}</span> / <span class="metric-val-base">${m.dailyTarget}</span></span>
                 <span class="metric-pct">${effPct}</span>
               </div>
               <div class="metric-progress-bg">
@@ -129,7 +117,7 @@ function renderOverviewGrid() {
             
             <div class="metric-item">
               <div class="metric-header">
-                <span class="metric-lbl"><span class="metric-num num-2">2</span> <span class="metric-val">${m.strokes} / ${m.totalOrder}</span></span>
+                <span class="metric-lbl"><span class="metric-num num-2">2</span> <span class="metric-val">${m.strokes}</span> / <span class="metric-val-base">${m.totalOrder}</span></span>
                 <span class="metric-pct">${orderPct}</span>
               </div>
               <div class="metric-progress-bg">
@@ -156,20 +144,9 @@ function renderOverviewGrid() {
                 <div class="metric-progress-fill" style="width: ${m.timeEfficiency}"></div>
               </div>
             </div>
-
             <div class="metric-item">
               <div class="metric-header">
-                <span class="metric-lbl"><span class="metric-num num-5">5</span> <span class="metric-val">${m.stoptime}</span></span>
-                <span class="metric-desc">${lang === 'vi' ? '= Thời gian chạy thử máy' : '= Trial run time'}</span>
-              </div>
-              <div class="metric-progress-bg">
-                <div class="metric-progress-fill" style="width: ${stopPct}"></div>
-              </div>
-            </div>
-
-            <div class="metric-item">
-              <div class="metric-header">
-                <span class="metric-lbl"><span class="metric-num num-6">6</span> <span class="metric-val">${m.runtime}</span></span>
+                <span class="metric-lbl"><span class="metric-num num-5">5</span> <span class="metric-val">${m.runtime}</span></span>
                 <span class="metric-desc">${lang === 'vi' ? '= Thời gian chạy máy' : '= Production run time'}</span>
               </div>
               <div class="metric-progress-bg">
@@ -182,11 +159,9 @@ function renderOverviewGrid() {
     `;
 
     card.addEventListener('click', () => {
-      if (id === state.selectedMachineId) return;
-      state.selectedMachineId = id;
-      document.querySelectorAll('#overview-machine-grid .machine-grid-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      updateActiveMachineDetails(id);
+      if (typeof showMachineDetail === 'function') {
+        showMachineDetail(id);
+      }
     });
 
     container.appendChild(card);

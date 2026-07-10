@@ -14,7 +14,7 @@ function initAlarms() {
           severityText: 'Nghiêm trọng',
           code: 'MACHINE-STOPPED-ALERT',
           machine: `MÁY DẬP #${id}`,
-          desc: `Thiết bị đang dừng hoạt động bất thường (Trạng thái stopped). Yêu cầu kiểm tra kết nối điện hoặc áp suất đầu trục dập.`,
+          desc: `Thiết bị đang dừng hoạt động bất thường (Trạng thái stopped). Yêu cầu kiểm tra kết nối điện.`,
           status: 'emergency',
           statusText: 'Khẩn cấp'
         });
@@ -82,33 +82,9 @@ function renderAlarmsView() {
   const paginated = filtered.slice(startIdx, endIdx);
   
   const alarmDescMap = {
-    a1: {
-      vi: 'Áp suất thủy lực vượt ngưỡng cho phép (185 bar). Hệ thống tự động ngắt khẩn cấp.',
-      en: 'Hydraulic pressure exceeded threshold limit (185 bar). System triggered emergency shutdown.'
-    },
-    a2: {
-      vi: 'Số nhịp đạt 500,000. Yêu cầu thay dầu bôi trơn và kiểm tra lưỡi cắt.',
-      en: 'Stroke count reached 500,000. Maintenance required for lubrication and cutting edge inspection.'
-    },
-    a3: {
-      vi: 'Hoàn tất sao lưu dữ liệu tự động hàng ngày. Trạng thái ổn định.',
-      en: 'Daily database automated backup completed successfully. System status stable.'
-    },
-    a4: {
-      vi: 'Mất kết nối với cảm biến nhiệt độ vùng lò hơi. Cảnh báo cháy tiềm ẩn.',
-      en: 'Connection lost with boiler temperature sensor. Potential fire hazard warning.'
-    },
-    a5: {
-      vi: 'Nhiệt độ động cơ vượt ngưỡng 75°C. Cần kiểm tra hệ thống quạt tản nhiệt.',
-      en: 'Motor temperature exceeded 75°C. Inspect cooling fan system configuration.'
-    },
-    a6: {
-      vi: 'Gửi báo cáo hiệu suất tự động hàng tuần về email quản trị thành công.',
-      en: 'Weekly automated performance report emailed to administration successfully.'
-    },
-    a7: {
-      vi: 'Nút nhấn dừng khẩn cấp bị kích hoạt thủ công từ bảng điều khiển.',
-      en: 'Emergency stop button manually activated from local control console panel.'
+    'MACHINE-STOPPED-ALERT': {
+      vi: 'Thiết bị đang dừng hoạt động bất thường (Trạng thái stopped). Yêu cầu kiểm tra kết nối điện.',
+      en: 'Equipment stopped abnormally (Stopped status). Check electrical connections.'
     }
   };
 
@@ -177,7 +153,7 @@ function renderAlarmsView() {
       `;
     }
 
-    const alarmDesc = alarmDescMap[a.id] ? alarmDescMap[a.id][lang] : a.desc;
+    const alarmDesc = alarmDescMap[a.code] ? alarmDescMap[a.code][lang] : a.desc;
     let alarmMachine = a.machine;
     if (lang === 'en') {
       alarmMachine = alarmMachine
@@ -264,33 +240,9 @@ function openAlarmModal(alarm) {
   state.selectedAlarmId = alarm.id;
   
   const alarmDescMap = {
-    a1: {
-      vi: 'Áp suất thủy lực vượt ngưỡng cho phép (185 bar). Hệ thống tự động ngắt khẩn cấp.',
-      en: 'Hydraulic pressure exceeded threshold limit (185 bar). System triggered emergency shutdown.'
-    },
-    a2: {
-      vi: 'Số nhịp đạt 500,000. Yêu cầu thay dầu bôi trơn và kiểm tra lưỡi cắt.',
-      en: 'Stroke count reached 500,000. Maintenance required for lubrication and cutting edge inspection.'
-    },
-    a3: {
-      vi: 'Hoàn tất sao lưu dữ liệu tự động hàng ngày. Trạng thái ổn định.',
-      en: 'Daily database automated backup completed successfully. System status stable.'
-    },
-    a4: {
-      vi: 'Mất kết nối với cảm biến nhiệt độ vùng lò hơi. Cảnh báo cháy tiềm ẩn.',
-      en: 'Connection lost with boiler temperature sensor. Potential fire hazard warning.'
-    },
-    a5: {
-      vi: 'Nhiệt độ động cơ vượt ngưỡng 75°C. Cần kiểm tra hệ thống quạt tản nhiệt.',
-      en: 'Motor temperature exceeded 75°C. Inspect cooling fan system configuration.'
-    },
-    a6: {
-      vi: 'Gửi báo cáo hiệu suất tự động hàng tuần về email quản trị thành công.',
-      en: 'Weekly automated performance report emailed to administration successfully.'
-    },
-    a7: {
-      vi: 'Nút nhấn dừng khẩn cấp bị kích hoạt thủ công từ bảng điều khiển.',
-      en: 'Emergency stop button manually activated from local control console panel.'
+    'MACHINE-STOPPED-ALERT': {
+      vi: 'Thiết bị đang dừng hoạt động bất thường (Trạng thái stopped). Yêu cầu kiểm tra kết nối điện.',
+      en: 'Equipment stopped abnormally (Stopped status). Check electrical connections.'
     }
   };
 
@@ -309,7 +261,7 @@ function openAlarmModal(alarm) {
   };
   const statusLabel = translations[lang][statusKeys[alarm.status]] || alarm.status;
 
-  const alarmDesc = alarmDescMap[alarm.id] ? alarmDescMap[alarm.id][lang] : alarm.desc;
+  const alarmDesc = alarmDescMap[alarm.code] ? alarmDescMap[alarm.code][lang] : alarm.desc;
   let alarmMachine = alarm.machine;
   if (lang === 'en') {
     alarmMachine = alarmMachine

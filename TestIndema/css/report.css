@@ -17,18 +17,38 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-.filter-segment-group, .filter-select-group {
+.filter-segment-group, .filter-select-group, .filter-date-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.filter-segment-title, .filter-select-title {
+.filter-segment-title, .filter-select-title, .filter-date-title {
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.custom-date-input {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  outline: none;
+  font-size: 0.85rem;
+  font-family: inherit;
+  width: 160px;
+  height: 38px;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.custom-date-input:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(0, 210, 255, 0.2);
 }
 
 .segment-control {

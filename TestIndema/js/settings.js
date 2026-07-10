@@ -1,184 +1,323 @@
+const flagViSVG = `
+  <svg viewBox="0 0 30 20" style="width: 20px; height: 14px; border-radius: 2px;">
+    <rect width="30" height="20" fill="#da251d"/>
+    <polygon points="15,4 16.35,8.15 20.7,8.15 17.2,10.7 18.5,14.85 15,12.3 11.5,14.85 12.8,10.7 9.3,8.15 13.65,8.15" fill="#ffff00"/>
+  </svg>
+`;
+
+const flagEnSVG = `
+  <svg viewBox="0 0 30 20" style="width: 20px; height: 14px; border-radius: 2px; border: 1px solid rgba(255, 255, 255, 0.1);">
+    <rect width="30" height="20" fill="#fff"/>
+    <rect width="30" height="1.54" y="0" fill="#b22234"/>
+    <rect width="30" height="1.54" y="3.08" fill="#b22234"/>
+    <rect width="30" height="1.54" y="6.15" fill="#b22234"/>
+    <rect width="30" height="1.54" y="9.23" fill="#b22234"/>
+    <rect width="30" height="1.54" y="12.31" fill="#b22234"/>
+    <rect width="30" height="1.54" y="15.38" fill="#b22234"/>
+    <rect width="30" height="1.54" y="18.46" fill="#b22234"/>
+    <rect width="12" height="10.77" fill="#3c3b6e"/>
+    <circle cx="3" cy="2.5" r="0.6" fill="#fff"/>
+    <circle cx="6" cy="2.5" r="0.6" fill="#fff"/>
+    <circle cx="9" cy="2.5" r="0.6" fill="#fff"/>
+    <circle cx="4.5" cy="5" r="0.6" fill="#fff"/>
+    <circle cx="7.5" cy="5" r="0.6" fill="#fff"/>
+    <circle cx="3" cy="7.5" r="0.6" fill="#fff"/>
+    <circle cx="6" cy="7.5" r="0.6" fill="#fff"/>
+    <circle cx="9" cy="7.5" r="0.6" fill="#fff"/>
+  </svg>
+`;
+
 function renderSettingsView() {
-  document.getElementById('settings-sys-name').value = state.systemName;
-  document.getElementById('settings-op-area').value = state.operatingArea;
+  const tableBody = document.getElementById('settings-accounts-body');
+  if (!tableBody) return;
+
+  const lang = state.language || 'vi';
+  const query = state.settingsSearchQuery.toLowerCase();
   
-  document.querySelectorAll('.language-selector-buttons .lang-btn').forEach(btn => {
-    if (btn.getAttribute('data-lang') === state.language) {
-      btn.classList.add('active');
-    } else {
-      btn.classList.remove('active');
-    }
+  // Filter accounts
+  const filtered = state.accountsData.filter(acc => {
+    return acc.username.toLowerCase().includes(query) || acc.role.toLowerCase().includes(query);
   });
 
-  document.getElementById('settings-downtime-enabled').checked = state.downtimeAlarmEnabled;
-  document.getElementById('settings-downtime-warning').value = state.downtimeThresholdWarning;
-  document.getElementById('settings-downtime-emergency').value = state.downtimeThresholdEmergency;
+  const totalRecords = filtered.length;
+  const pageSize = parseInt(state.settingsPageSize, 10);
+  const totalPages = Math.ceil(totalRecords / pageSize) || 1;
 
-  document.getElementById('settings-efficiency-enabled').checked = state.efficiencyAlarmEnabled;
-  document.getElementById('settings-efficiency-warning').value = state.efficiencyThresholdWarning;
-  document.getElementById('settings-efficiency-delay').value = state.efficiencyDelay;
+  if (state.settingsCurrentPage > totalPages) {
+    state.settingsCurrentPage = totalPages;
+  }
 
-  const usersGrid = document.getElementById('settings-users-grid');
-  if (usersGrid) {
-    usersGrid.innerHTML = '';
-    state.usersData.forEach(u => {
-      const card = document.createElement('div');
-      card.className = 'user-card';
-      card.innerHTML = `
-        <div class="user-profile-info">
-          <div class="user-card-avatar">${u.initials}</div>
-          <div class="user-card-details">
-            <span class="user-card-name">${u.name}</span>
-            <span class="user-card-role">${u.role}</span>
+  const startIndex = (state.settingsCurrentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalRecords);
+  const pageRecords = filtered.slice(startIndex, endIndex);
+
+  tableBody.innerHTML = '';
+
+  if (pageRecords.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="4" style="text-align: center; padding: 24px; color: var(--text-secondary);">
+          ${lang === 'vi' ? 'Không tìm thấy tài khoản nào' : 'No accounts found'}
+        </td>
+      </tr>
+    `;
+  } else {
+    pageRecords.forEach((acc, idx) => {
+      const globalIdx = startIndex + idx + 1;
+      const tr = document.createElement('tr');
+      
+      const badgeClass = acc.role === 'ADMIN' ? 'badge-success' : 'badge-info';
+      
+      tr.innerHTML = `
+        <td style="text-align: center;">${globalIdx}</td>
+        <td style="text-align: left; font-weight: 600; color: #fff;">${acc.username}</td>
+        <td style="text-align: center;">
+          <span class="badge ${badgeClass}" style="font-size: 0.7rem; padding: 4px 10px; border-radius: 12px; font-weight: 700;">${acc.role}</span>
+        </td>
+        <td style="text-align: center;">
+          <div style="display: inline-flex; align-items: center; gap: 10px;">
+            <div class="custom-select-wrapper" style="width: 110px; text-align: left;">
+              <select class="settings-role-select" data-username="${acc.username}" style="padding: 4px 8px; font-size: 0.8rem; background: var(--bg-primary); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; cursor: pointer; outline: none; width: 100%;">
+                <option value="ADMIN" ${acc.role === 'ADMIN' ? 'selected' : ''}>Admin</option>
+                <option value="OPERATOR" ${acc.role === 'OPERATOR' ? 'selected' : ''}>Operator</option>
+              </select>
+            </div>
+            <button class="btn-change-pwd" data-username="${acc.username}" style="background: rgba(255, 167, 38, 0.1); border: 1px solid rgba(255, 167, 38, 0.3); color: #ffa726; padding: 5px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s;">
+              <span>🔑</span> <span data-i18n="settings_btn_change_pwd">${lang === 'vi' ? 'Đổi mật khẩu' : 'Change password'}</span>
+            </button>
           </div>
-        </div>
-        <svg class="user-action-dots" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="1"></circle>
-          <circle cx="12" cy="5" r="1"></circle>
-          <circle cx="12" cy="19" r="1"></circle>
-        </svg>
+        </td>
       `;
-      usersGrid.appendChild(card);
+      tableBody.appendChild(tr);
     });
   }
+
+  // Update pagination info
+  const tableInfo = document.getElementById('settings-table-info');
+  if (tableInfo) {
+    if (lang === 'vi') {
+      tableInfo.textContent = totalRecords > 0 
+        ? `Đang xem ${startIndex + 1} đến ${endIndex} trong ${totalRecords} tài khoản` 
+        : `Đang xem 0 đến 0 trong 0 tài khoản`;
+    } else {
+      tableInfo.textContent = totalRecords > 0 
+        ? `Showing ${startIndex + 1} to ${endIndex} of ${totalRecords} accounts` 
+        : `Showing 0 to 0 of 0 accounts`;
+    }
+  }
+
+  // Update pagination buttons
+  const pagination = document.getElementById('settings-pagination');
+  if (pagination) {
+    pagination.innerHTML = '';
+    
+    // Previous Button
+    const prevBtn = document.createElement('button');
+    prevBtn.className = `paginate-btn ${state.settingsCurrentPage === 1 ? 'disabled' : ''}`;
+    prevBtn.style.cssText = `background: var(--bg-primary); border: 1px solid var(--border-color); color: ${state.settingsCurrentPage === 1 ? 'var(--text-secondary)' : '#fff'}; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;`;
+    prevBtn.textContent = lang === 'vi' ? 'Trước' : 'Prev';
+    if (state.settingsCurrentPage > 1) {
+      prevBtn.addEventListener('click', () => {
+        state.settingsCurrentPage--;
+        renderSettingsView();
+      });
+    }
+    pagination.appendChild(prevBtn);
+
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+      const pageBtn = document.createElement('button');
+      const isActive = i === state.settingsCurrentPage;
+      pageBtn.className = `paginate-btn ${isActive ? 'active' : ''}`;
+      pageBtn.style.cssText = `background: ${isActive ? 'var(--accent-blue)' : 'var(--bg-primary)'}; border: 1px solid ${isActive ? 'var(--accent-blue)' : 'var(--border-color)'}; color: #fff; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold;`;
+      pageBtn.textContent = i;
+      pageBtn.addEventListener('click', () => {
+        state.settingsCurrentPage = i;
+        renderSettingsView();
+      });
+      pagination.appendChild(pageBtn);
+    }
+
+    // Next Button
+    const nextBtn = document.createElement('button');
+    nextBtn.className = `paginate-btn ${state.settingsCurrentPage === totalPages ? 'disabled' : ''}`;
+    nextBtn.style.cssText = `background: var(--bg-primary); border: 1px solid var(--border-color); color: ${state.settingsCurrentPage === totalPages ? 'var(--text-secondary)' : '#fff'}; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;`;
+    nextBtn.textContent = lang === 'vi' ? 'Sau' : 'Next';
+    if (state.settingsCurrentPage < totalPages) {
+      nextBtn.addEventListener('click', () => {
+        state.settingsCurrentPage++;
+        renderSettingsView();
+      });
+    }
+    pagination.appendChild(nextBtn);
+  }
+
+  // Bind change role dropdown and change password buttons
+  document.querySelectorAll('.settings-role-select').forEach(sel => {
+    sel.addEventListener('change', (e) => {
+      const username = sel.getAttribute('data-username');
+      const newRole = e.target.value;
+      const account = state.accountsData.find(a => a.username === username);
+      if (account) {
+        account.role = newRole;
+        renderSettingsView();
+        const msg = lang === 'vi' 
+          ? `Quyền hạn của tài khoản "${username}" đã được chuyển thành ${newRole}!` 
+          : `Account "${username}" role updated to ${newRole}!`;
+        showToast(msg, 'success');
+      }
+    });
+  });
+
+  document.querySelectorAll('.btn-change-pwd').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const username = btn.getAttribute('data-username');
+      const pwdModal = document.getElementById('settings-pwd-modal');
+      const usernameInput = document.getElementById('settings-pwd-username');
+      const pwdInput = document.getElementById('settings-pwd-newpwd');
+      
+      if (pwdModal && usernameInput && pwdInput) {
+        usernameInput.value = username;
+        pwdInput.value = '';
+        pwdModal.classList.remove('hidden');
+      }
+    });
+  });
 }
 
 function initSettingsControls() {
-  const menuItems = document.querySelectorAll('.settings-menu-item');
-  menuItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.preventDefault();
-      menuItems.forEach(m => m.classList.remove('active'));
-      item.classList.add('active');
-      const secId = item.getAttribute('data-sec');
-      const targetSec = document.getElementById(`sec-${secId}`);
-      if (targetSec) {
-        targetSec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-    });
-  });
+  const createBtn = document.getElementById('btn-create-account');
+  const createModal = document.getElementById('settings-create-modal');
+  const createClose = document.getElementById('settings-create-close');
+  const createCancel = document.getElementById('settings-create-cancel');
+  const createSubmit = document.getElementById('settings-create-submit');
 
-  const langVi = document.getElementById('lang-btn-vi');
-  const langEn = document.getElementById('lang-btn-en');
-  
-  if (langVi && langEn) {
-    langVi.addEventListener('click', () => {
-      state.language = 'vi';
-      renderSettingsView();
-      translateUI('vi');
-    });
-    langEn.addEventListener('click', () => {
-      state.language = 'en';
-      renderSettingsView();
-      translateUI('en');
+  const closeCreateModal = () => {
+    if (createModal) createModal.classList.add('hidden');
+  };
+
+  if (createBtn && createModal) {
+    createBtn.addEventListener('click', () => {
+      document.getElementById('settings-create-username').value = '';
+      document.getElementById('settings-create-password').value = '';
+      document.getElementById('settings-create-role').value = 'OPERATOR';
+      createModal.classList.remove('hidden');
     });
   }
 
-  const saveBtn = document.getElementById('settings-btn-save');
-  if (saveBtn) {
-    saveBtn.addEventListener('click', () => {
-      state.systemName = document.getElementById('settings-sys-name').value;
-      state.operatingArea = document.getElementById('settings-op-area').value;
-      
-      state.downtimeAlarmEnabled = document.getElementById('settings-downtime-enabled').checked;
-      state.downtimeThresholdWarning = parseInt(document.getElementById('settings-downtime-warning').value) || 15;
-      state.downtimeThresholdEmergency = parseInt(document.getElementById('settings-downtime-emergency').value) || 30;
-      
-      state.efficiencyAlarmEnabled = document.getElementById('settings-efficiency-enabled').checked;
-      state.efficiencyThresholdWarning = parseInt(document.getElementById('settings-efficiency-warning').value) || 85;
-      state.efficiencyDelay = parseInt(document.getElementById('settings-efficiency-delay').value) || 60;
+  if (createClose) createClose.addEventListener('click', closeCreateModal);
+  if (createCancel) createCancel.addEventListener('click', closeCreateModal);
 
-      const stationText = document.querySelector('.header-title');
-      if (stationText) {
-        stationText.textContent = state.systemName.toUpperCase();
+  if (createSubmit) {
+    createSubmit.addEventListener('click', () => {
+      const username = document.getElementById('settings-create-username').value.trim();
+      const role = document.getElementById('settings-create-role').value;
+      const password = document.getElementById('settings-create-password').value;
+      const lang = state.language || 'vi';
+
+      if (!username || !password) {
+        const errorMsg = lang === 'vi' ? 'Vui lòng điền đầy đủ thông tin!' : 'Please fill in all fields!';
+        showToast(errorMsg, 'error');
+        return;
       }
 
-      if (state.efficiencyAlarmEnabled) {
-        Object.keys(machinesData).forEach(id => {
-          const m = machinesData[id];
-          const efficiency = m.load || 85;
-          if (efficiency < state.efficiencyThresholdWarning && m.status !== 'stopped') {
-            const alarmCode = `LOW-EFF-${id}`;
-            if (!alarmsData.some(a => a.code === alarmCode && a.status !== 'resolved')) {
-              const timeStr = new Date().toLocaleTimeString('vi-VN', { hour12: false });
-              const dateStr = new Date().toLocaleDateString('vi-VN');
-              alarmsData.unshift({
-                id: `low_eff_${id}`,
-                time: timeStr,
-                date: dateStr,
-                severity: 'warning',
-                severityText: state.language === 'vi' ? 'Cảnh báo' : 'Warning',
-                code: alarmCode,
-                machine: `MÁY DẬP #${id}`,
-                desc: state.language === 'vi' 
-                  ? `Hiệu suất máy dập (${efficiency}%) giảm sâu dưới ngưỡng thiết lập (${state.efficiencyThresholdWarning}%).`
-                  : `Machine efficiency (${efficiency}%) dropped below threshold (${state.efficiencyThresholdWarning}%).`,
-                status: 'emergency',
-                statusText: state.language === 'vi' ? 'Khẩn cấp' : 'Emergency'
-              });
-            }
-          }
-        });
+      if (state.accountsData.some(a => a.username.toLowerCase() === username.toLowerCase())) {
+        const errorMsg = lang === 'vi' ? 'Tên đăng nhập đã tồn tại!' : 'Username already exists!';
+        showToast(errorMsg, 'error');
+        return;
       }
 
-      const successMsg = state.language === 'vi' ? translations.vi.toast_save_success : translations.en.toast_save_success;
+      state.accountsData.push({ username, role });
+      closeCreateModal();
+      renderSettingsView();
+
+      const successMsg = lang === 'vi' ? `Đã tạo tài khoản "${username}" thành công!` : `Account "${username}" created successfully!`;
       showToast(successMsg, 'success');
     });
   }
 
-  const cancelBtn = document.getElementById('settings-btn-cancel');
-  if (cancelBtn) {
-    cancelBtn.addEventListener('click', () => {
-      renderSettingsView();
-    });
-  }
+  // Password Modal Controls
+  const pwdModal = document.getElementById('settings-pwd-modal');
+  const pwdClose = document.getElementById('settings-pwd-close');
+  const pwdCancel = document.getElementById('settings-pwd-cancel');
+  const pwdSubmit = document.getElementById('settings-pwd-submit');
 
-  const addUserBtn = document.getElementById('settings-btn-add-user');
-  const addUserModal = document.getElementById('add-user-modal');
-  const addUserCloseBtn = document.getElementById('add-user-close-btn');
-  const addUserCancelBtn = document.getElementById('add-user-btn-cancel');
-  const addUserSubmitBtn = document.getElementById('add-user-btn-submit');
-  
-  if (addUserBtn && addUserModal) {
-    addUserBtn.addEventListener('click', () => {
-      document.getElementById('add-user-name-input').value = '';
-      addUserModal.classList.remove('hidden');
-    });
-  }
-
-  const closeAddUser = () => {
-    if (addUserModal) addUserModal.classList.add('hidden');
+  const closePwdModal = () => {
+    if (pwdModal) pwdModal.classList.add('hidden');
   };
 
-  if (addUserCloseBtn) addUserCloseBtn.addEventListener('click', closeAddUser);
-  if (addUserCancelBtn) addUserCancelBtn.addEventListener('click', closeAddUser);
+  if (pwdClose) pwdClose.addEventListener('click', closePwdModal);
+  if (pwdCancel) pwdCancel.addEventListener('click', closePwdModal);
 
-  if (addUserSubmitBtn) {
-    addUserSubmitBtn.addEventListener('click', () => {
-      const name = document.getElementById('add-user-name-input').value.trim();
-      const role = document.getElementById('add-user-role-select').value;
-      if (!name) return;
+  if (pwdSubmit) {
+    pwdSubmit.addEventListener('click', () => {
+      const username = document.getElementById('settings-pwd-username').value;
+      const newPwd = document.getElementById('settings-pwd-newpwd').value;
+      const lang = state.language || 'vi';
 
-      const names = name.split(' ');
-      const initials = names.length > 1 
-        ? (names[0][0] + names[names.length - 1][0]).toUpperCase()
-        : name.slice(0, 2).toUpperCase();
+      if (!newPwd) {
+        const errorMsg = lang === 'vi' ? 'Vui lòng nhập mật khẩu mới!' : 'Please enter a new password!';
+        showToast(errorMsg, 'error');
+        return;
+      }
 
-      let roleText = 'Vận hành viên (Operator)';
-      if (role === 'Manager') roleText = 'Quản lý kỹ thuật (Manager)';
-      if (role === 'Admin') roleText = 'Quản trị viên (Administrator)';
+      closePwdModal();
+      const successMsg = lang === 'vi' 
+        ? `Mật khẩu của tài khoản "${username}" đã được cập nhật thành công!` 
+        : `Password for "${username}" updated successfully!`;
+      showToast(successMsg, 'success');
+    });
+  }
 
-      state.usersData.push({
-        name: name,
-        role: roleText,
-        initials: initials
-      });
-
-      closeAddUser();
+  // Table controls (page size and search)
+  const pageSizeSelect = document.getElementById('settings-page-size');
+  if (pageSizeSelect) {
+    pageSizeSelect.addEventListener('change', (e) => {
+      state.settingsPageSize = e.target.value;
+      state.settingsCurrentPage = 1;
       renderSettingsView();
+    });
+  }
 
-      const toastMsg = state.language === 'vi' ? translations.vi.toast_add_user_success : translations.en.toast_add_user_success;
-      showToast(toastMsg, 'success');
+  const searchInput = document.getElementById('settings-search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      state.settingsSearchQuery = e.target.value;
+      state.settingsCurrentPage = 1;
+      renderSettingsView();
+    });
+  }
+
+  // Header Language Switcher
+  const headerLangBtn = document.getElementById('header-lang-btn');
+  const headerLangDropdown = document.getElementById('header-lang-dropdown');
+  const headerLangFlag = document.getElementById('header-lang-flag');
+
+  if (headerLangBtn && headerLangDropdown) {
+    headerLangBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      headerLangDropdown.classList.toggle('hidden');
+    });
+
+    document.querySelectorAll('#header-lang-dropdown .lang-dropdown-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        const lang = item.getAttribute('data-lang');
+        state.language = lang;
+        if (headerLangFlag) {
+          headerLangFlag.innerHTML = lang === 'vi' ? flagViSVG : flagEnSVG;
+        }
+        
+        translateUI(lang);
+        renderSettingsView();
+        
+        const langMsg = lang === 'vi' ? 'Đã chuyển sang Tiếng Việt' : 'Switched to English';
+        showToast(langMsg, 'success');
+        headerLangDropdown.classList.add('hidden');
+      });
+    });
+
+    document.addEventListener('click', () => {
+      headerLangDropdown.classList.add('hidden');
     });
   }
 }

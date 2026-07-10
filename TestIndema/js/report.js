@@ -1,120 +1,348 @@
+let weeklyChart = null;
+let achievementDonutChart = null;
+
 function getReportData(range, machineId) {
   const lang = state.language || 'vi';
   let factor = 1.0;
   if (machineId !== 'all') {
     factor = 0.1;
-    const num = parseInt(machineId);
+    const num = parseInt(machineId, 10);
     factor = factor * (0.8 + (num % 5) * 0.1);
   }
-  
-  if (range === '7d') {
-    factor = factor * 7;
-  } else if (range === 'month') {
-    factor = factor * 30;
+
+  let normalizedRange = range;
+  if (range === '24h') normalizedRange = 'day';
+  if (range === '7d') normalizedRange = 'week';
+
+  let selectedDateStr = "";
+  if (normalizedRange === 'day') {
+    selectedDateStr = state.reportSelectedDate || '09/07/2026';
+  } else if (normalizedRange === 'month') {
+    selectedDateStr = state.reportSelectedMonth || '07/2026';
+  } else if (normalizedRange === 'year') {
+    selectedDateStr = state.reportSelectedYear || '2026';
+  }
+
+  const getHash = (str) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  };
+
+  let dateFactor = 1.0;
+  if (selectedDateStr) {
+    const seed = getHash(selectedDateStr);
+    dateFactor = 0.88 + (seed % 25) * 0.01;
   }
   
-  const strokes = Math.round(128402 * factor);
-  const uptime = parseFloat((22.4 * factor).toFixed(1));
-  const downtime = parseFloat((1.6 * factor).toFixed(1));
-  const maintenance = parseFloat((downtime * 0.375).toFixed(1));
-  const incident = parseFloat((downtime * 0.625).toFixed(1));
+  const daysCount = (normalizedRange === 'day' ? 1 : (normalizedRange === 'week' ? 7 : (normalizedRange === 'month' ? 30 : 365)));
+  const machinesCount = (machineId === 'all' ? 10 : 1);
+
+  const formatHoursStr = (mins) => {
+    const h = (mins / 60).toFixed(1);
+    return `${h}h`;
+  };
+
+  // Table shift rows & dynamic strokes accumulation
+  const tableRows = [];
+  const machinesList = machineId === 'all' ? ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'] : [machineId];
   
-  let oee = 93.3;
-  if (machineId !== 'all') {
-    const num = parseInt(machineId);
-    oee = 90 + (num * 1.3) % 9;
-  }
-  
+  let totalStrokes = 0;
+  let totalTarget = 0;
+
+  machinesList.forEach(mId => {
+    const mFactor = (0.90 + (parseInt(mId, 10) % 5) * 0.04) * dateFactor;
+    
+    // Ca Sáng
+    const strokesMorning = Math.round(760 * mFactor * daysCount);
+    const targetMorning = 750 * daysCount;
+    const morningOee = Math.round((strokesMorning / targetMorning) * 100);
+    const isMorningOk = morningOee >= 95;
+    const morningStatus = isMorningOk 
+      ? (lang === 'vi' ? 'Hoàn thành' : 'Completed') 
+      : (lang === 'vi' ? 'Chưa hoàn thành' : 'Incomplete');
+    const morningClass = isMorningOk ? 'badge-success' : 'badge-danger';
+    
+    // Ca Chiều
+    const strokesAfternoon = Math.round(710 * mFactor * daysCount);
+    const targetAfternoon = 750 * daysCount;
+    const afternoonOee = Math.round((strokesAfternoon / targetAfternoon) * 100);
+    const isAfternoonOk = afternoonOee >= 95;
+    const afternoonStatus = isAfternoonOk 
+      ? (lang === 'vi' ? 'Hoàn thành' : 'Completed') 
+      : (lang === 'vi' ? 'Chưa hoàn thành' : 'Incomplete');
+    const afternoonClass = isAfternoonOk ? 'badge-success' : 'badge-danger';
+
+    totalStrokes += (strokesMorning + strokesAfternoon);
+    totalTarget += (targetMorning + targetAfternoon);
+
+    tableRows.push({
+      shift: lang === 'vi' ? 'Ca Sáng (08:00 - 12:00)' : 'Morning Shift (08:00 - 12:00)',
+      machine: `${lang === 'vi' ? 'Máy dập' : 'Press'} ${mId}`,
+      strokes: strokesMorning,
+      uptime: formatHoursStr(240 * daysCount),
+      downtime: `${Math.round(10 * daysCount)}m`,
+      oee: `${morningOee}%`,
+      status: morningStatus,
+      statusClass: morningClass
+    });
+
+    tableRows.push({
+      shift: lang === 'vi' ? 'Ca Chiều (14:00 - 18:00)' : 'Afternoon Shift (14:00 - 18:00)',
+      machine: `${lang === 'vi' ? 'Máy dập' : 'Press'} ${mId}`,
+      strokes: strokesAfternoon,
+      uptime: formatHoursStr(210 * daysCount),
+      downtime: `${Math.round(30 * daysCount)}m`,
+      oee: `${afternoonOee}%`,
+      status: afternoonStatus,
+      statusClass: afternoonClass
+    });
+  });
+
+  // KPI card values synced with table accumulators
+  const actualStrokes = totalStrokes;
+  const targetStrokes = totalTarget;
+  const actualStrokesStr = actualStrokes.toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-US');
+  const targetStrokesStr = targetStrokes.toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-US');
+  const actualPct = Math.round((actualStrokes / targetStrokes) * 100);
+
+  // Target and progress orders
+  const targetOrder = 5000 * daysCount * machinesCount;
+  const progressOrder = Math.round(actualStrokes * 3.3);
+  const targetOrderStr = targetOrder.toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-US');
+  const progressOrderStr = progressOrder.toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-US');
+  const progressPct = Math.min(100, Math.round((progressOrder / targetOrder) * 100));
+
+  // OEE & Time efficiency
+  const oee = Math.round((actualStrokes / targetStrokes) * 100);
+  const timeEff = machineId === 'all' ? 93 : 90 + (parseInt(machineId, 10) * 2) % 7;
+
+  const trialMins = 0;
+  const runningMins = Math.round(410 * daysCount * machinesCount * (machineId === 'all' ? 1.0 : (0.9 + (parseInt(machineId, 10) % 3) * 0.05)));
+  const stoppedMins = Math.max(10 * daysCount * machinesCount, 480 * daysCount * machinesCount - trialMins - runningMins);
+
+  const formatDurationMins = (totalMins) => {
+    const h = Math.floor(totalMins / 60);
+    const m = Math.floor(totalMins % 60);
+    const s = 0;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const trialTimeStr = formatDurationMins(trialMins);
+  const runTimeStr = formatDurationMins(runningMins);
+
+  // Chart data generation matching requested points:
+  // - day => 24 points (hours)
+  // - week => 7 points (days of week)
+  // - month => 30 points (days of month)
+  // - year => 12 points (months of year)
   let labels = [];
-  let prodData = [];
-  let errData = [];
-  
-  if (range === '24h') {
-    labels = ['06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
-    prodData = [75, 80, 72, 85, 78, 70];
-    errData = [0, 15, 0, 0, 10, 0];
-  } else if (range === '7d') {
+  let trialData = [];
+  let runningData = [];
+  let stoppedData = [];
+  let actualYieldData = [];
+  let targetYieldData = [];
+
+  if (normalizedRange === 'day') {
+    // 24 points hourly
+    for (let h = 0; h < 24; h++) {
+      const hourStr = `${h.toString().padStart(2, '0')}:00`;
+      labels.push(hourStr);
+      
+      // Active shift hours (8-12 and 14-18)
+      if ((h >= 8 && h < 12) || (h >= 14 && h < 18)) {
+        trialData.push(h === 8 || h === 14 ? 0.15 : 0.0);
+        runningData.push(h === 8 || h === 14 ? 0.75 : 0.85);
+        stoppedData.push(h === 8 || h === 14 ? 0.1 : 0.15);
+
+        const targetVal = 190 * machinesCount;
+        const actualVal = Math.round(targetVal * (0.95 + (h % 3) * 0.05) * factor * dateFactor);
+        actualYieldData.push(actualVal);
+        targetYieldData.push(targetVal);
+      } else {
+        trialData.push(0.0);
+        runningData.push(0.0);
+        stoppedData.push(0.0);
+
+        actualYieldData.push(0);
+        targetYieldData.push(0);
+      }
+    }
+  } else if (normalizedRange === 'week') {
+    // 7 points by day of week
     labels = lang === 'vi' 
       ? ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN']
       : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    prodData = [120, 125, 118, 130, 122, 115, 95];
-    errData = [5, 8, 2, 4, 12, 0, 15];
-  } else {
-    labels = lang === 'vi'
-      ? ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4']
-      : ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-    prodData = [450, 480, 460, 490];
-    errData = [25, 15, 30, 10];
-  }
-  
-  if (machineId !== 'all') {
-    prodData = prodData.map(v => Math.round(v * 0.1));
-    errData = errData.map(v => Math.round(v * 0.1));
-  }
-  
-  const baseErrors = Math.round(24 * factor);
-  const mouldErrors = Math.round(baseErrors * 0.5);
-  const pressureErrors = Math.round(baseErrors * 0.33);
-  const otherErrors = baseErrors - mouldErrors - pressureErrors;
-  
-  let tableRows = [];
-  const statusCompleted = lang === 'vi' ? 'Hoàn thành' : 'Completed';
-  const statusMaint = lang === 'vi' ? 'Đang bảo trì' : 'Maintenance';
-  const allMachines = lang === 'vi' ? 'Tất cả' : 'All';
+    trialData = [0.5, 0.5, 0.5, 0.5, 0.5, 0.3, 0.0];
+    runningData = [6.8, 6.9, 6.7, 7.1, 6.9, 5.2, 0.0];
+    stoppedData = [0.7, 0.6, 0.8, 0.4, 0.6, 1.5, 0.0];
 
-  if (range === '24h') {
-    tableRows = [
-      { shift: lang === 'vi' ? 'Ca Sáng (06:00 - 14:00)' : 'Morning Shift (06:00 - 14:00)', machine: machineId === 'all' ? (lang === 'vi' ? 'Machine P-01' : 'Machine P-01') : `Machine P-${machineId}`, strokes: Math.round(42150 * factor * 10), uptime: '7.8h', downtime: '12m', oee: '96.4%', status: statusCompleted, statusClass: 'badge-running' },
-      { shift: lang === 'vi' ? 'Ca Sáng (06:00 - 14:00)' : 'Morning Shift (06:00 - 14:00)', machine: machineId === 'all' ? (lang === 'vi' ? 'Machine P-02' : 'Machine P-02') : `Machine P-${machineId}`, strokes: Math.round(38900 * factor * 10), uptime: '7.2h', downtime: '48m', oee: '89.2%', status: statusMaint, statusClass: 'badge-info' },
-      { shift: lang === 'vi' ? 'Ca Chiều (14:00 - 22:00)' : 'Afternoon Shift (14:00 - 22:00)', machine: machineId === 'all' ? (lang === 'vi' ? 'Machine P-01' : 'Machine P-01') : `Machine P-${machineId}`, strokes: Math.round(47352 * factor * 10), uptime: '7.4h', downtime: '36m', oee: '94.1%', status: statusCompleted, statusClass: 'badge-running' }
-    ];
-  } else if (range === '7d') {
-    tableRows = [
-      { shift: lang === 'vi' ? 'Tuần này - Ca Sáng' : 'This Week - Morning Shift', machine: machineId === 'all' ? allMachines : `Machine P-${machineId}`, strokes: Math.round(252150 * factor), uptime: '48.5h', downtime: '2.1h', oee: '95.2%', status: statusCompleted, statusClass: 'badge-running' },
-      { shift: lang === 'vi' ? 'Tuần này - Ca Chiều' : 'This Week - Afternoon Shift', machine: machineId === 'all' ? allMachines : `Machine P-${machineId}`, strokes: Math.round(238900 * factor), uptime: '46.2h', downtime: '4.8h', oee: '91.8%', status: statusCompleted, statusClass: 'badge-running' },
-      { shift: lang === 'vi' ? 'Tuần này - Ca Tối' : 'This Week - Night Shift', machine: machineId === 'all' ? allMachines : `Machine P-${machineId}`, strokes: Math.round(187352 * factor), uptime: '40.4h', downtime: '8.6h', oee: '88.5%', status: statusCompleted, statusClass: 'badge-running' }
-    ];
+    const baseTargetWeek = [1500, 1500, 1500, 1500, 1500, 750, 0];
+    const baseActualWeek = [1520, 1490, 1510, 1530, 1480, 760, 0];
+    targetYieldData = baseTargetWeek.map(v => v * machinesCount);
+    actualYieldData = baseActualWeek.map((v, i) => Math.round(v * machinesCount * (0.98 + (i % 3) * 0.02) * factor * dateFactor));
+  } else if (normalizedRange === 'month') {
+    // 30 points by day of month
+    for (let d = 1; d <= 30; d++) {
+      labels.push(lang === 'vi' ? `Ngày ${d}` : `Day ${d}`);
+      const isWeekend = (d % 7 === 6 || d % 7 === 0);
+      const isSaturday = (d % 7 === 6);
+      if (isWeekend) {
+        trialData.push(d % 7 === 6 ? 0.2 : 0.0);
+        runningData.push(d % 7 === 6 ? 4.0 : 0.0);
+        stoppedData.push(d % 7 === 6 ? 0.8 : 0.0);
+
+        const targetVal = (isSaturday ? 750 : 0) * machinesCount;
+        const actualVal = Math.round((isSaturday ? 760 : 0) * machinesCount * (0.95 + (d % 4) * 0.03) * factor * dateFactor);
+        targetYieldData.push(targetVal);
+        actualYieldData.push(actualVal);
+      } else {
+        trialData.push(0.3);
+        runningData.push(parseFloat((7.0 + (d % 3) * 0.1).toFixed(1)));
+        stoppedData.push(parseFloat((0.7 - (d % 3) * 0.1).toFixed(1)));
+
+        const targetVal = 1500 * machinesCount;
+        const actualVal = Math.round(1520 * machinesCount * (0.96 + (d % 5) * 0.02) * factor * dateFactor);
+        targetYieldData.push(targetVal);
+        actualYieldData.push(actualVal);
+      }
+    }
   } else {
-    tableRows = [
-      { shift: lang === 'vi' ? 'Tháng này - Ca Sáng' : 'This Month - Morning Shift', machine: machineId === 'all' ? allMachines : `Machine P-${machineId}`, strokes: Math.round(1025120 * factor), uptime: '198.5h', downtime: '8.4h', oee: '96.1%', status: statusCompleted, statusClass: 'badge-running' },
-      { shift: lang === 'vi' ? 'Tháng này - Ca Chiều' : 'This Month - Afternoon Shift', machine: machineId === 'all' ? allMachines : `Machine P-${machineId}`, strokes: Math.round(987200 * factor), uptime: '190.2h', downtime: '16.8h', oee: '93.4%', status: statusCompleted, statusClass: 'badge-running' },
-      { shift: lang === 'vi' ? 'Tháng này - Ca Tối' : 'This Month - Night Shift', machine: machineId === 'all' ? allMachines : `Machine P-${machineId}`, strokes: Math.round(847350 * factor), uptime: '180.4h', downtime: '25.6h', oee: '89.7%', status: statusCompleted, statusClass: 'badge-running' }
-    ];
+    // 12 points by month
+    const monthNamesVi = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+    const monthNamesEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    for (let m = 0; m < 12; m++) {
+      labels.push(lang === 'vi' ? monthNamesVi[m] : monthNamesEn[m]);
+      trialData.push(parseFloat((7.5 + (m % 3) * 0.5).toFixed(1)));
+      runningData.push(parseFloat((170.0 + (m % 5) * 4.0).toFixed(1)));
+      stoppedData.push(parseFloat((18.0 - (m % 4) * 2.0).toFixed(1)));
+
+      const targetVal = 40000 * machinesCount;
+      const actualVal = Math.round(41200 * machinesCount * (0.97 + (m % 3) * 0.02) * factor * dateFactor);
+      targetYieldData.push(targetVal);
+      actualYieldData.push(actualVal);
+    }
   }
-  
+
+  // Scale chart stats by machinesCount
+  trialData = trialData.map(v => parseFloat((v * machinesCount).toFixed(1)));
+  runningData = runningData.map(v => parseFloat((v * machinesCount).toFixed(1)));
+  stoppedData = stoppedData.map(v => parseFloat((v * machinesCount).toFixed(1)));
+
   return {
-    strokes: strokes.toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-US'),
-    uptime,
-    downtime,
-    maintenance: maintenance > 0 ? (maintenance >= 1 ? `${maintenance.toFixed(1)}h` : `${Math.round(maintenance * 60)}m`) : '0m',
-    incident: incident > 0 ? (incident >= 1 ? `${incident.toFixed(1)}h` : `${Math.round(incident * 60)}m`) : '0m',
-    oee: oee.toFixed(1),
+    actualStrokes,
+    targetStrokes,
+    actualStrokesStr,
+    targetStrokesStr,
+    actualPct,
+    targetOrder,
+    progressOrder,
+    targetOrderStr,
+    progressOrderStr,
+    progressPct,
+    oee,
+    timeEff,
+    trialTimeStr,
+    runTimeStr,
     labels,
-    prodData,
-    errData,
-    baseErrors,
-    mouldErrors,
-    pressureErrors,
-    otherErrors,
+    trialData,
+    runningData,
+    stoppedData,
+    actualYieldData,
+    targetYieldData,
     tableRows
   };
 }
 
+let operatingChartInstance = null;
+let yieldChartInstance = null;
+
 function renderReportView() {
   const lang = state.language || 'vi';
+  
+  // Điều khiển ẩn hiện và cập nhật giá trị các trường lịch
+  const range = state.reportTimeRange;
+  const dateGroup = document.getElementById('report-date-filter-group');
+  const datePicker = document.getElementById('report-date-picker');
+  const monthPicker = document.getElementById('report-month-picker');
+  const yearPickerWrapper = document.getElementById('report-year-picker-wrapper');
+  const dateTitleEl = document.getElementById('report-date-filter-title');
+
+  if (dateGroup && datePicker && monthPicker && yearPickerWrapper) {
+    if (range === 'day') {
+      dateGroup.classList.remove('hidden');
+      datePicker.classList.remove('hidden');
+      monthPicker.classList.add('hidden');
+      yearPickerWrapper.classList.add('hidden');
+      if (dateTitleEl) dateTitleEl.textContent = lang === 'vi' ? 'Chọn Ngày' : 'Select Day';
+      datePicker.value = state.reportSelectedDate;
+    } else if (range === 'month') {
+      dateGroup.classList.remove('hidden');
+      datePicker.classList.add('hidden');
+      monthPicker.classList.remove('hidden');
+      yearPickerWrapper.classList.add('hidden');
+      if (dateTitleEl) dateTitleEl.textContent = lang === 'vi' ? 'Chọn Tháng' : 'Select Month';
+      monthPicker.value = state.reportSelectedMonth;
+    } else if (range === 'year') {
+      dateGroup.classList.remove('hidden');
+      datePicker.classList.add('hidden');
+      monthPicker.classList.add('hidden');
+      yearPickerWrapper.classList.remove('hidden');
+      if (dateTitleEl) dateTitleEl.textContent = lang === 'vi' ? 'Chọn Năm' : 'Select Year';
+      
+      const yearSelect = document.getElementById('report-year-picker');
+      if (yearSelect) yearSelect.value = state.reportSelectedYear;
+    } else {
+      dateGroup.classList.add('hidden');
+    }
+  }
+
   const data = getReportData(state.reportTimeRange, state.reportMachineId);
   
-  document.getElementById('r-kpi-strokes').textContent = data.strokes;
-  const hourText = lang === 'vi' ? 'giờ' : 'hours';
-  document.getElementById('r-kpi-uptime').innerHTML = `${data.uptime} <span class="unit">${hourText}</span>`;
-  document.getElementById('r-kpi-uptime-progress').style.width = `${data.oee}%`;
-  
-  const uptimeDescText = lang === 'vi' ? 'Hiệu suất khả dụng: ' : 'Uptime efficiency: ';
-  document.getElementById('r-kpi-uptime-desc').textContent = `${uptimeDescText}${data.oee}%`;
-  document.getElementById('r-kpi-downtime').innerHTML = `${data.downtime} <span class="unit">${hourText}</span>`;
-  document.getElementById('r-kpi-dt-maintenance').textContent = data.maintenance;
-  document.getElementById('r-kpi-dt-incident').textContent = data.incident;
-  
+  // 1. Plan / strokes target card
+  const kpiStrokesTarget = document.getElementById('r-kpi-strokes-target');
+  if (kpiStrokesTarget) {
+    kpiStrokesTarget.innerHTML = `<span style="color: #00d2ff;">${data.actualStrokesStr}</span> / <span style="color: #ffffff;">${data.targetStrokesStr}</span>`;
+  }
+  const kpiStrokesTargetPct = document.getElementById('r-kpi-strokes-target-pct');
+  if (kpiStrokesTargetPct) {
+    kpiStrokesTargetPct.textContent = `${data.actualPct}%`;
+  }
+
+  // 2. Order Progress card
+  const kpiOrderProgress = document.getElementById('r-kpi-order-progress');
+  if (kpiOrderProgress) {
+    kpiOrderProgress.innerHTML = `<span style="color: #00d2ff;">${data.progressOrderStr}</span> / <span style="color: #ffffff;">${data.targetOrderStr}</span>`;
+  }
+  const kpiOrderProgressPct = document.getElementById('r-kpi-order-progress-pct');
+  if (kpiOrderProgressPct) {
+    kpiOrderProgressPct.textContent = `${data.progressPct}%`;
+  }
+
+  // 3. OEE Card
+  const kpiOee = document.getElementById('r-kpi-oee');
+  if (kpiOee) {
+    kpiOee.textContent = `${data.oee}%`;
+  }
+
+  // 4. Time Efficiency Card
+  const kpiTimeEff = document.getElementById('r-kpi-time-eff');
+  if (kpiTimeEff) {
+    kpiTimeEff.textContent = `${data.timeEff}%`;
+  }
+
+
+
+  // 6. Running Time Card
+  const kpiRunTime = document.getElementById('r-kpi-run-time');
+  if (kpiRunTime) {
+    kpiRunTime.textContent = data.runTimeStr;
+  }
+
+  // Bar chart rendering
   const barCtx = document.getElementById('operating-performance-chart');
   if (barCtx) {
     if (operatingChartInstance) {
@@ -125,18 +353,19 @@ function renderReportView() {
       data: {
         labels: data.labels,
         datasets: [
+
           {
-            label: lang === 'vi' ? 'Sản xuất' : 'Production',
-            data: data.prodData,
+            label: lang === 'vi' ? 'Máy chạy' : 'Running',
+            data: data.runningData,
             backgroundColor: '#00e676',
-            borderRadius: 6,
+            borderRadius: 4,
             borderSkipped: false
           },
           {
-            label: lang === 'vi' ? 'Lỗi kĩ thuật' : 'Technical Errors',
-            data: data.errData,
-            backgroundColor: 'rgba(255, 61, 0, 0.4)',
-            borderRadius: 6,
+            label: lang === 'vi' ? 'Thời gian dừng' : 'Stopped',
+            data: data.stoppedData,
+            backgroundColor: '#ef4444',
+            borderRadius: 4,
             borderSkipped: false
           }
         ]
@@ -159,7 +388,7 @@ function renderReportView() {
               color: '#8f9cae',
               font: {
                 family: 'inherit',
-                size: 11
+                size: 10
               }
             }
           },
@@ -172,7 +401,7 @@ function renderReportView() {
               color: '#8f9cae',
               font: {
                 family: 'inherit',
-                size: 11
+                size: 10
               }
             }
           }
@@ -181,36 +410,35 @@ function renderReportView() {
     });
   }
 
-  document.getElementById('r-total-errors-text').textContent = data.baseErrors;
-  
-  const pieCtx = document.getElementById('error-distribution-chart');
+  // Donut chart rendering
+  const pieCtx = document.getElementById('yield-efficiency-chart');
   if (pieCtx) {
-    if (errorChartInstance) {
-      errorChartInstance.destroy();
+    if (yieldChartInstance) {
+      yieldChartInstance.destroy();
     }
-    
-    const errorDataValues = data.baseErrors > 0 ? [data.mouldErrors, data.pressureErrors, data.otherErrors] : [1];
-    const errorDataColors = data.baseErrors > 0 ? ['#00d2ff', '#ff3d00', '#8f9cae'] : ['#16223f'];
-    const pieLabels = lang === 'vi' 
-      ? ['Lỗi khuôn dập', 'Áp suất thấp', 'Khác']
-      : ['Mould Errors', 'Low Pressure', 'Other'];
-    
-    errorChartInstance = new Chart(pieCtx, {
+
+    const remainingVal = Math.max(0, data.targetStrokes - data.actualStrokes);
+    const isEmpty = data.targetStrokes === 0;
+
+    document.getElementById('r-yield-efficiency-pct').textContent = `${data.actualPct}%`;
+    document.getElementById('r-yield-legend-actual').textContent = data.actualStrokesStr;
+    document.getElementById('r-yield-legend-remaining').textContent = remainingVal.toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-US');
+
+    yieldChartInstance = new Chart(pieCtx, {
       type: 'doughnut',
       data: {
-        labels: pieLabels,
+        labels: lang === 'vi' ? ['Thực tế', 'Còn lại'] : ['Actual', 'Remaining'],
         datasets: [{
-          data: errorDataValues,
-          backgroundColor: errorDataColors,
-          borderWidth: 0,
-          borderRadius: 0,
-          hoverOffset: 4
+          data: isEmpty ? [0, 1] : [data.actualStrokes, remainingVal],
+          backgroundColor: isEmpty ? ['#16223f'] : ['#00d2ff', '#16223f'],
+          borderColor: isEmpty ? ['#16223f'] : ['#00d2ff', '#4e5b6e'],
+          borderWidth: 1
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '85%',
+        cutout: '70%',
         plugins: {
           legend: {
             display: false
@@ -218,33 +446,6 @@ function renderReportView() {
         }
       }
     });
-    
-    const legendContainer = document.getElementById('r-error-legend-container');
-    if (legendContainer) {
-      legendContainer.innerHTML = `
-        <div class="r-legend-row">
-          <div class="r-legend-lbl-group">
-            <span class="r-legend-square" style="background-color: #00d2ff;"></span>
-            <span>${pieLabels[0]}</span>
-          </div>
-          <span class="r-legend-val">${data.mouldErrors}</span>
-        </div>
-        <div class="r-legend-row">
-          <div class="r-legend-lbl-group">
-            <span class="r-legend-square" style="background-color: #ff3d00;"></span>
-            <span>${pieLabels[1]}</span>
-          </div>
-          <span class="r-legend-val">${data.pressureErrors}</span>
-        </div>
-        <div class="r-legend-row">
-          <div class="r-legend-lbl-group">
-            <span class="r-legend-square" style="background-color: #8f9cae;"></span>
-            <span>${pieLabels[2]}</span>
-          </div>
-          <span class="r-legend-val">${data.otherErrors}</span>
-        </div>
-      `;
-    }
   }
 
   const tableBody = document.getElementById('report-table-body');
@@ -252,18 +453,205 @@ function renderReportView() {
     tableBody.innerHTML = '';
     data.tableRows.forEach(row => {
       const tr = document.createElement('tr');
+      const isOk = parseFloat(row.oee) >= 95;
       tr.innerHTML = `
         <td>${row.shift}</td>
         <td>${row.machine}</td>
-        <td>${row.strokes.toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-US')}</td>
-        <td>${row.uptime}</td>
-        <td style="color: ${row.downtime !== '0m' && row.downtime !== '12m' ? 'rgba(255, 61, 0, 0.8)' : 'var(--text-primary)'}">${row.downtime}</td>
-        <td style="color: ${parseFloat(row.oee) >= 92 ? 'var(--status-running)' : 'var(--text-primary)'}; font-weight: 700;">${row.oee}</td>
-        <td><span class="badge ${row.statusClass}">${row.status}</span></td>
+        <td style="text-align: center;">${row.strokes.toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-US')}</td>
+        <td style="text-align: center;">${row.uptime}</td>
+        <td style="text-align: center; color: ${row.downtime !== '0m' && row.downtime !== '10m' ? '#ef4444' : 'var(--text-primary)'}">${row.downtime}</td>
+        <td style="text-align: center; color: ${isOk ? '#00e676' : 'var(--text-primary)'}; font-weight: 700;">${row.oee}</td>
+        <td style="text-align: center;"><span class="badge ${row.statusClass}">${row.status}</span></td>
       `;
       tableBody.appendChild(tr);
     });
   }
+
+  // Khởi chạy biểu đồ tuần và biểu đồ đạt mục tiêu sản lượng
+  initWeeklyPerformanceChart(data);
+  updateAchievementDonutChart(data.tableRows);
+}
+
+function initWeeklyPerformanceChart(reportData) {
+  const canvas = document.getElementById('weekly-performance-chart');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  if (weeklyChart) {
+    weeklyChart.destroy();
+  }
+
+  const lang = state.language || 'vi';
+  
+  const actualData = reportData.actualYieldData;
+  const targetData = reportData.targetYieldData;
+  const labels = reportData.labels;
+
+  weeklyChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: translations[lang].history_legend_actual || 'Thực tế',
+          data: actualData,
+          backgroundColor: '#00d2ff',
+          borderColor: '#00d2ff',
+          borderWidth: 1,
+          borderRadius: 4,
+          barPercentage: 0.6,
+          categoryPercentage: 0.5
+        },
+        {
+          label: translations[lang].history_legend_target || 'Mục tiêu',
+          data: targetData,
+          backgroundColor: '#00ff00',
+          borderColor: '#00ff00',
+          borderWidth: 1,
+          borderRadius: 4,
+          barPercentage: 0.6,
+          categoryPercentage: 0.5
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          backgroundColor: '#0c1527',
+          titleColor: '#ffffff',
+          bodyColor: '#7f91a8',
+          borderColor: '#16223f',
+          borderWidth: 1,
+          padding: 10,
+          displayColors: true,
+          font: {
+            family: "'Outfit', sans-serif"
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            color: '#7f91a8',
+            font: {
+              family: "'Outfit', sans-serif",
+              size: 11
+            }
+          }
+        },
+        y: {
+          grid: {
+            color: '#16223f'
+          },
+          ticks: {
+            color: '#7f91a8',
+            font: {
+              family: "'Outfit', sans-serif",
+              size: 11
+            },
+            callback: function(value) {
+              return value >= 1000 ? (value/1000) + 'k' : value;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function updateAchievementDonutChart(tableRows) {
+  let standardCount = 0; // OEE >= 100%
+  let lowCount = 0;      // OEE < 100%
+
+  tableRows.forEach(row => {
+    const oeeVal = parseInt(row.oee, 10);
+    if (oeeVal >= 100) {
+      standardCount++;
+    } else {
+      lowCount++;
+    }
+  });
+
+  const total = tableRows.length;
+  let standardPct = 0;
+  let lowPct = 0;
+
+  if (total > 0) {
+    standardPct = Math.round((standardCount / total) * 100);
+    lowPct = 100 - standardPct;
+  }
+
+  const standardEl = document.getElementById('achievement-count-standard');
+  const lowEl = document.getElementById('achievement-count-low');
+  if (standardEl) standardEl.textContent = standardCount;
+  if (lowEl) lowEl.textContent = lowCount;
+
+  const canvas = document.getElementById('history-achievement-chart');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  if (achievementDonutChart) {
+    achievementDonutChart.destroy();
+  }
+
+  const lang = state.language || 'vi';
+  const labels = lang === 'vi' 
+    ? ['Đạt chuẩn (100%)', 'Không đạt (< 100%)']
+    : ['Standard Met (100%)', 'Not Met (< 100%)'];
+
+  const isEmpty = total === 0;
+
+  achievementDonutChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: isEmpty ? [0, 1] : [standardPct, lowPct],
+        backgroundColor: isEmpty ? ['#16223f'] : ['#00ff00', '#ef4444'],
+        borderColor: isEmpty ? ['#16223f'] : ['#00ff00', '#ef4444'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          enabled: !isEmpty,
+          backgroundColor: '#0c1527',
+          titleColor: '#ffffff',
+          bodyColor: '#7f91a8',
+          borderColor: '#16223f',
+          borderWidth: 1,
+          callbacks: {
+            title: function() {
+              return '';
+            },
+            label: function(context) {
+              const value = context.parsed || 0;
+              return ` ${value}%`;
+            }
+          }
+        }
+      }
+    }
+  });
 }
 
 function initReportControls() {
@@ -284,6 +672,44 @@ function initReportControls() {
   if (machineSelect) {
     machineSelect.addEventListener('change', (e) => {
       state.reportMachineId = e.target.value;
+      renderReportView();
+    });
+  }
+
+  const datePicker = document.getElementById('report-date-picker');
+  if (datePicker) {
+    flatpickr(datePicker, {
+      dateFormat: "d/m/Y",
+      defaultDate: state.reportSelectedDate,
+      onChange: function(selectedDates, dateStr) {
+        state.reportSelectedDate = dateStr;
+        renderReportView();
+      }
+    });
+  }
+
+  const monthPicker = document.getElementById('report-month-picker');
+  if (monthPicker) {
+    flatpickr(monthPicker, {
+      plugins: [
+        new monthSelectPlugin({
+          shorthand: true,
+          dateFormat: "m/Y",
+          altFormat: "m/Y"
+        })
+      ],
+      defaultDate: state.reportSelectedMonth,
+      onChange: function(selectedDates, dateStr) {
+        state.reportSelectedMonth = dateStr;
+        renderReportView();
+      }
+    });
+  }
+
+  const yearSelect = document.getElementById('report-year-picker');
+  if (yearSelect) {
+    yearSelect.addEventListener('change', (e) => {
+      state.reportSelectedYear = e.target.value;
       renderReportView();
     });
   }
@@ -322,14 +748,3 @@ function initReportControls() {
     });
   }
 }
-
-// Base alarms dataset (initial static mock alarms matching the image)
-let alarmsData = [
-  { id: 'a1', time: '14:22:15', date: '12/10/2024', severity: 'critical', severityText: 'Nghiêm trọng', code: 'ERR-DOWNTIME-902', machine: 'MÁY ÉP #08', desc: 'Áp suất thủy lực vượt ngưỡng cho phép (185 bar). Hệ thống tự động ngắt khẩn cấp.', status: 'processing', statusText: 'Đang xử lý' },
-  { id: 'a2', time: '14:10:45', date: '12/10/2024', severity: 'warning', severityText: 'Cảnh báo', code: 'MAINT-STROKE-COUNT', machine: 'MÁY CẮT #02', desc: 'Số nhịp đạt 500,000. Yêu cầu thay dầu bôi trơn và kiểm tra lưỡi cắt.', status: 'scheduled', statusText: 'Đã lên lịch' },
-  { id: 'a3', time: '13:55:02', date: '12/10/2024', severity: 'info', severityText: 'Thông tin', code: 'SYS-UPTIME-NOTIF', machine: 'TOÀN HỆ THỐNG', desc: 'Hoàn tất sao lưu dữ liệu tự động hàng ngày. Trạng thái ổn định.', status: 'resolved', statusText: 'Hoàn tất' },
-  { id: 'a4', time: '13:42:20', date: '12/10/2024', severity: 'critical', severityText: 'Nghiêm trọng', code: 'CONN-LOST-04', machine: 'CẢM BIẾN NHIỆT #11', desc: 'Mất kết nối với cảm biến nhiệt độ vùng lò hơi. Cảnh báo cháy tiềm ẩn.', status: 'emergency', statusText: 'Khẩn cấp' },
-  { id: 'a5', time: '11:30:15', date: '12/10/2024', severity: 'warning', severityText: 'Cảnh báo', code: 'TEMP-HIGH-02', machine: 'MÁY DẬP #03', desc: 'Nhiệt độ động cơ vượt ngưỡng 75°C. Cần kiểm tra hệ thống quạt tản nhiệt.', status: 'resolved', statusText: 'Hoàn tất' },
-  { id: 'a6', time: '09:15:00', date: '12/10/2024', severity: 'info', severityText: 'Thông tin', code: 'SYS-REPORT-AUTO', machine: 'TOÀN HỆ THỐNG', desc: 'Gửi báo cáo hiệu suất tự động hàng tuần về email quản trị thành công.', status: 'resolved', statusText: 'Hoàn tất' },
-  { id: 'a7', time: '08:45:10', date: '12/10/2024', severity: 'critical', severityText: 'Nghiêm trọng', code: 'E-STOP-PRESSED', machine: 'MÁY DẬP #05', desc: 'Nút nhấn dừng khẩn cấp bị kích hoạt thủ công từ bảng điều khiển.', status: 'resolved', statusText: 'Hoàn tất' }
-];

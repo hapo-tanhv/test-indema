@@ -6,7 +6,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quản lý máy dập - HP System</title>
+  <title>Quản lý máy dập - Indema System</title>
   <link rel="stylesheet" href="@Url.Content("~/css/base.css?v=3")">
   <link rel="stylesheet" href="@Url.Content("~/css/layout.css?v=3")">
   <link rel="stylesheet" href="@Url.Content("~/css/overview.css?v=3")">
@@ -16,8 +16,10 @@
   <link rel="stylesheet" href="@Url.Content("~/css/alerts.css?v=3")">
   <link rel="stylesheet" href="@Url.Content("~/css/settings.css?v=3")">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js" defer></script>
   <script>
     window.basePath = '@Url.Content("~/")';
   </script>
@@ -49,6 +51,7 @@
         @Html.Partial("_History")
         @Html.Partial("_Report")
         @Html.Partial("_Alerts")
+        @Html.Partial("_Guide")
         @Html.Partial("_Settings")
       </main>
     </div>

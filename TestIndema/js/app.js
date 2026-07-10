@@ -49,6 +49,30 @@ function runSystemTests() {
   return { passed, failed };
 }
 
+function startRealTimeClock() {
+  const timeEl = document.querySelector('.time-widget .time-value');
+  const dateEl = document.querySelector('.time-widget .date-value');
+  
+  if (!timeEl || !dateEl) return;
+
+  function updateClock() {
+    const now = new Date();
+    
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    timeEl.textContent = `${hours}:${minutes}:${seconds}`;
+
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    dateEl.textContent = `${day}/${month}/${year}`;
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+}
+
 // 6. Khởi tạo ứng dụng khi trình duyệt tải xong DOM
 document.addEventListener('DOMContentLoaded', () => {
   initNavigation();
@@ -59,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initAlarms();
   initAlarmControls();
   initSettingsControls();
+  startRealTimeClock();
   
   // Thiết lập selectedMachineListId mặc định là '01'
   state.selectedMachineListId = '01';

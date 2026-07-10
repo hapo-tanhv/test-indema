@@ -12,8 +12,11 @@ const state = {
   historyEndDate: null,
   historyStatusFilter: 'all',
   historyQualityFilter: 'all',
-  reportTimeRange: '24h',
+  reportTimeRange: 'day',
   reportMachineId: 'all',
+  reportSelectedDate: '09/07/2026',
+  reportSelectedMonth: '07/2026',
+  reportSelectedYear: '2026',
   alarmSearchQuery: '',
   alarmSeverityFilter: 'all',
   alarmCurrentPage: 1,
@@ -31,40 +34,54 @@ const state = {
   usersData: [
     { name: 'Lê Văn Nam', role: 'Quản lý kỹ thuật (Manager)', initials: 'LN' },
     { name: 'Nguyễn Thị Mai', role: 'Vận hành viên (Operator)', initials: 'NM' }
+  ],
+  settingsPageSize: 10,
+  settingsCurrentPage: 1,
+  settingsSearchQuery: '',
+  accountsData: [
+    { username: 'Admin', role: 'ADMIN' },
+    { username: 'Operator', role: 'OPERATOR' }
   ]
 };
 
 // Dữ liệu mô phỏng tĩnh của 10 máy dập
 const machinesData = {
-  '01': { name: 'Máy số 01', sp: 'Vỏ motor A', order: 'LSX-240520-01', strokes: '1.125', dailyTarget: '1.500', totalOrder: '5.000', efficiency: '75%', timeEfficiency: '56.7%', runtime: '04:32:15', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'running', load: 75, trend: [600, 850, 1125, 950] },
-  '02': { name: 'Máy số 02', sp: 'Nắp hộp B', order: 'LSX-240520-03', strokes: '980', dailyTarget: '1.200', totalOrder: '4.000', efficiency: '82%', timeEfficiency: '62%', runtime: '03:58:40', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'running', load: 82, trend: [400, 650, 980, 800] },
-  '03': { name: 'Máy số 03', sp: 'Vỏ motor A', order: 'LSX-240520-01', strokes: '1.256', dailyTarget: '1.500', totalOrder: '5.000', efficiency: '83.7%', timeEfficiency: '64.6%', runtime: '05:10:23', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'running', load: 83.7, trend: [500, 800, 1256, 1000] },
-  '04': { name: 'Máy số 04', sp: 'Đế quạt C', order: 'LSX-240520-02', strokes: '870', dailyTarget: '1.100', totalOrder: '3.200', efficiency: '79%', timeEfficiency: '60%', runtime: '03:20:11', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'running', load: 79, trend: [300, 500, 870, 700] },
-  '05': { name: 'Máy số 05', sp: 'Vỏ motor A', order: 'LSX-240520-01', strokes: '1.030', dailyTarget: '1.200', totalOrder: '4.000', efficiency: '85.8%', timeEfficiency: '66.5%', runtime: '04:15:42', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'running', load: 85.8, trend: [550, 750, 1030, 900] },
-  '06': { name: 'Máy số 06', sp: 'Đế quạt C', order: 'LSX-240520-04', strokes: '560', dailyTarget: '1.000', totalOrder: '3.000', efficiency: '56%', timeEfficiency: '40%', runtime: '02:10:05', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'stopped', load: 56, trend: [560, 560, 560, 560] },
-  '07': { name: 'Máy số 07', sp: 'Nắp hộp B', order: 'LSX-240520-05', strokes: '0', dailyTarget: '1.000', totalOrder: '2.500', efficiency: '0%', timeEfficiency: '0%', runtime: '00:00:00', stoptime: '00:00:00', runtimeMax: '08:00:00', status: 'stopped', load: 0, trend: [0, 0, 0, 0] },
-  '08': { name: 'Máy số 08', sp: 'Vỏ motor A', order: 'LSX-240520-02', strokes: '760', dailyTarget: '1.000', totalOrder: '3.500', efficiency: '76%', timeEfficiency: '57.0%', runtime: '03:45:18', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'running', load: 76, trend: [400, 550, 760, 600] },
-  '09': { name: 'Máy số 09', sp: 'Nắp hộp B', order: 'LSX-240520-03', strokes: '1.100', dailyTarget: '1.300', totalOrder: '4.500', efficiency: '84.6%', timeEfficiency: '66.8%', runtime: '04:28:33', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'running', load: 84.6, trend: [500, 750, 1100, 950] },
-  '10': { name: 'Máy số 10', sp: 'Đế quạt C', order: 'LSX-240520-04', strokes: '320', dailyTarget: '800', totalOrder: '2.800', efficiency: '40%', timeEfficiency: '32.0%', runtime: '01:35:47', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'stopped', load: 40, trend: [320, 320, 320, 320] }
+  '01': { name: 'Máy số 01', sp: 'Vỏ motor A', order: 'LSX-240520-01', strokes: '1.125', dailyTarget: '1.500', totalOrder: '5.000', efficiency: '75%', timeEfficiency: '56.7%', runtime: '04:32:15', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'running', load: 75, trend: [600, 850, 1125, 950], trialTime: '00:05:00', productCode: 'SP-901-MTR', productName: 'Vỏ Motor Panasonic A', batch: 'LOT-20260709-01', plannedQty: '5.000' },
+  '02': { name: 'Máy số 02', sp: 'Nắp hộp B', order: 'LSX-240520-03', strokes: '980', dailyTarget: '1.200', totalOrder: '4.000', efficiency: '82%', timeEfficiency: '62%', runtime: '03:58:40', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'running', load: 82, trend: [400, 650, 980, 800], trialTime: '00:08:00', productCode: 'SP-902-BOX', productName: 'Nắp hộp kỹ thuật B', batch: 'LOT-20260709-02', plannedQty: '4.000' },
+  '03': { name: 'Máy số 03', sp: 'Vỏ motor A', order: 'LSX-240520-01', strokes: '1.256', dailyTarget: '1.500', totalOrder: '5.000', efficiency: '83.7%', timeEfficiency: '64.6%', runtime: '05:10:23', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'running', load: 83.7, trend: [500, 800, 1256, 1000], trialTime: '00:15:30', productCode: 'SP-901-MTR', productName: 'Vỏ Motor Panasonic A', batch: 'LOT-20260709-01', plannedQty: '5.000' },
+  '04': { name: 'Máy số 04', sp: 'Đế quạt C', order: 'LSX-240520-02', strokes: '870', dailyTarget: '1.100', totalOrder: '3.200', efficiency: '79%', timeEfficiency: '60%', runtime: '03:20:11', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'running', load: 79, trend: [300, 500, 870, 700], trialTime: '00:10:00', productCode: 'SP-903-FAN', productName: 'Đế quạt Asia C', batch: 'LOT-20260709-03', plannedQty: '3.200' },
+  '05': { name: 'Máy số 05', sp: 'Vỏ motor A', order: 'LSX-240520-01', strokes: '1.030', dailyTarget: '1.200', totalOrder: '4.000', efficiency: '85.8%', timeEfficiency: '66.5%', runtime: '04:15:42', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'running', load: 85.8, trend: [550, 750, 1030, 900], trialTime: '00:12:00', productCode: 'SP-901-MTR', productName: 'Vỏ Motor Panasonic A', batch: 'LOT-20260709-01', plannedQty: '4.000' },
+  '06': { name: 'Máy số 06', sp: 'Đế quạt C', order: 'LSX-240520-04', strokes: '560', dailyTarget: '1.000', totalOrder: '3.000', efficiency: '56%', timeEfficiency: '40%', runtime: '02:10:05', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'stopped', load: 56, trend: [560, 560, 560, 560], trialTime: '00:00:00', productCode: 'SP-903-FAN', productName: 'Đế quạt Asia C', batch: 'LOT-20260709-04', plannedQty: '3.000' },
+  '07': { name: 'Máy số 07', sp: 'Nắp hộp B', order: 'LSX-240520-05', strokes: '0', dailyTarget: '1.000', totalOrder: '2.500', efficiency: '0%', timeEfficiency: '0%', runtime: '00:00:00', stoptime: '00:00:00', runtimeMax: '08:00:00', status: 'stopped', load: 0, trend: [0, 0, 0, 0], trialTime: '00:00:00', productCode: 'SP-902-BOX', productName: 'Nắp hộp kỹ thuật B', batch: 'LOT-20260709-05', plannedQty: '2.500' },
+  '08': { name: 'Máy số 08', sp: 'Vỏ motor A', order: 'LSX-240520-02', strokes: '760', dailyTarget: '1.000', totalOrder: '3.500', efficiency: '76%', timeEfficiency: '57.0%', runtime: '03:45:18', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'running', load: 76, trend: [400, 550, 760, 600], trialTime: '00:05:00', productCode: 'SP-901-MTR', productName: 'Vỏ Motor Panasonic A', batch: 'LOT-20260709-02', plannedQty: '3.500' },
+  '09': { name: 'Máy số 09', sp: 'Nắp hộp B', order: 'LSX-240520-03', strokes: '1.100', dailyTarget: '1.300', totalOrder: '4.500', efficiency: '84.6%', timeEfficiency: '66.8%', runtime: '04:28:33', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'running', load: 84.6, trend: [500, 750, 1100, 950], trialTime: '00:11:00', productCode: 'SP-902-BOX', productName: 'Nắp hộp kỹ thuật B', batch: 'LOT-20260709-03', plannedQty: '4.500' },
+  '10': { name: 'Máy số 10', sp: 'Đế quạt C', order: 'LSX-240520-04', strokes: '320', dailyTarget: '800', totalOrder: '2.800', efficiency: '40%', timeEfficiency: '32.0%', runtime: '01:35:47', stoptime: '00:15:30', runtimeMax: '08:00:00', status: 'stopped', load: 40, trend: [320, 320, 320, 320], trialTime: '00:00:00', productCode: 'SP-903-FAN', productName: 'Đế quạt Asia C', batch: 'LOT-20260709-04', plannedQty: '2.800' }
 };
+
+// Base alarms dataset (initial static mock alarms matching the image)
+let alarmsData = [];
 
 // Bản đồ tiêu đề trang để hỗ trợ cập nhật tiêu đề động đa ngôn ngữ
 const pageHeaders = {
   vi: {
-    overview: { title: 'TỔNG QUAN HỆ THỐNG', subtitle: 'Giám sát trạng thái 10 máy dập' },
-    machine: { title: 'CHI TIẾT MÁY DẬP', subtitle: 'Danh sách và thông số chi tiết từng máy dập' },
-    history: { title: 'LỊCH SỬ HOẠT ĐỘNG', subtitle: 'Nhật ký vận hành và các sự kiện hệ thống' },
-    report: { title: 'BÁO CÁO HIỆU SUẤT HỆ THỐNG', subtitle: 'Phân tích dữ liệu & Hiệu suất dập' },
-    alert: { title: 'CẢNH BÁO & THÔNG BÁO', subtitle: 'TRẠM: HÀ NỘI #04 • TRỰC TUYẾN' },
-    settings: { title: 'CÀI ĐẶT HỆ THỐNG', subtitle: 'Quản lý hiệu suất, thời gian vận hành và các ngưỡng cảnh báo cho dây chuyền sản xuất HP-01' }
+    overview: { title: 'TỔNG QUAN HỆ THỐNG', subtitle: 'Giám sát trạng thái máy' },
+    machine: { title: 'DANH SÁCH MÁY DẬP', subtitle: 'Danh sách và thông số chi tiết từng máy dập' },
+    'machine-detail': { title: 'CHI TIẾT MÁY DẬP', subtitle: 'Thông số kỹ thuật và hiệu suất hoạt động chi tiết' },
+    history: { title: 'LỊCH SỬ HOẠT ĐỘNG', subtitle: 'Nhật ký vận hành và các sự kiện' },
+    report: { title: 'BÁO CÁO HIỆU SUẤT HỆ THỐNG', subtitle: 'Phân tích dữ liệu & Hiệu suất' },
+    alert: { title: 'CẢNH BÁO & THÔNG BÁO', subtitle: '' },
+    settings: { title: 'CÀI ĐẶT HỆ THỐNG', subtitle: 'Quản lý tài khoản' },
+    guide: { title: 'HƯỚNG DẪN SỬ DỤNG', subtitle: 'Tổng quan  /  Hướng dẫn sử dụng' }
   },
   en: {
     overview: { title: 'SYSTEM OVERVIEW', subtitle: 'Monitoring status of 10 stamping machines' },
-    machine: { title: 'STAMPING MACHINE DETAILS', subtitle: 'Detailed list and specifications of each stamping machine' },
+    machine: { title: 'STAMPING MACHINE LIST', subtitle: 'Detailed list and specifications of each stamping machine' },
+    'machine-detail': { title: 'STAMPING MACHINE DETAILS', subtitle: 'Detailed specifications and performance charts of the machine' },
     history: { title: 'OPERATIONAL HISTORY', subtitle: 'Operation log and system events' },
     report: { title: 'SYSTEM PERFORMANCE REPORT', subtitle: 'Data analysis & stamping performance' },
     alert: { title: 'ALARMS & NOTIFICATIONS', subtitle: 'STATION: HANOI #04 • ONLINE' },
-    settings: { title: 'SYSTEM SETTINGS', subtitle: 'Manage performance, runtime, and alarm thresholds for production line HP-01' }
+    settings: { title: 'SYSTEM SETTINGS', subtitle: 'Manage performance, runtime, and alarm thresholds for production line HP-01' },
+    guide: { title: 'USER MANUAL / GUIDE', subtitle: 'Overview  /  User Manual' }
   }
 };
 
@@ -98,7 +115,7 @@ function translateUI(lang) {
 
   const sidebarItems = document.querySelectorAll('.sidebar-nav .nav-item');
   if (sidebarItems.length >= 6) {
-    const keys = ['nav_overview', 'nav_machine', 'nav_history', 'nav_report', 'nav_alert', 'nav_settings'];
+    const keys = ['nav_overview', 'nav_history', 'nav_report', 'nav_alert', 'nav_guide', 'nav_settings'];
     sidebarItems.forEach((item, idx) => {
       const span = item.querySelector('span:not(.nav-badge)');
       if (span && keys[idx]) {
@@ -156,11 +173,12 @@ function translateUI(lang) {
       renderMachineList(query);
     } else if (tabId === 'history') {
       renderHistoryTable();
-      initWeeklyPerformanceChart();
     } else if (tabId === 'report') {
       renderReportView();
     } else if (tabId === 'alert') {
       renderAlarmsView();
+    } else if (tabId === 'settings') {
+      renderSettingsView();
     }
   }
 }

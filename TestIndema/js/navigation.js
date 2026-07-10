@@ -21,7 +21,19 @@ function initNavigation() {
       e.preventDefault();
       
       const tabId = item.getAttribute('data-tab');
-      if (!tabId || tabId === state.currentTab) return;
+      if (!tabId) return;
+      if (tabId === state.currentTab) {
+        if (tabId === 'machine') {
+          const detailSection = document.getElementById('view-machine-detail');
+          const listSection = document.getElementById('view-machine');
+          if (detailSection && listSection && !detailSection.classList.contains('hidden')) {
+            detailSection.classList.add('hidden');
+            listSection.classList.remove('hidden');
+            updateHeaderTitle('machine');
+          }
+        }
+        return;
+      }
 
       // Cập nhật State hiện tại
       state.currentTab = tabId;
@@ -50,7 +62,6 @@ function initNavigation() {
       // Nếu chuyển sang tab lịch sử, thực hiện render bảng lịch sử và biểu đồ
       if (tabId === 'history') {
         renderHistoryTable();
-        setTimeout(initWeeklyPerformanceChart, 50);
       }
 
       // Nếu chuyển sang tab báo cáo, thực hiện render báo cáo và biểu đồ

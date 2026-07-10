@@ -417,7 +417,7 @@
 }
 
 .legend-dot.actual { background-color: var(--accent-blue); }
-.legend-dot.target { background-color: var(--text-muted); }
+.legend-dot.target { background-color: #00ff00; }
 
 .chart-canvas-wrapper {
   flex-grow: 1;
@@ -442,7 +442,7 @@
 .stability-title {
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   letter-spacing: 1px;
   align-self: flex-start;
   margin-bottom: 10px;
@@ -782,3 +782,18 @@ span.flatpickr-weekday {
 }
 
 /* Reports View Styling (Task 5.8) */
+
+/* Expandable Detail Row Styles */
+.history-detail-row.hidden {
+  display: none !important;
+}
+.detail-expand-wrapper {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+.history-detail-btn:hover {
+  background: rgba(0, 210, 255, 0.2) !important;
+  color: white !important;
+  border-color: rgba(0, 210, 255, 0.4) !important;
+}
